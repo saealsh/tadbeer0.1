@@ -2916,9 +2916,9 @@ body::before {
 }
 
 /* ═══ CHAT + PROFILE SYSTEM v2.2 ═══ */
-.chat-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity var(--t-med)}
+.chat-overlay{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity var(--t-med)}
 .chat-overlay.open{opacity:1;pointer-events:all}
-.chat-panel{position:fixed;bottom:0;left:50%;transform:translate(-50%,100%);z-index:501;width:100%;max-width:var(--container);height:90vh;height:90dvh;background:var(--bg);border-radius:24px 24px 0 0;border-top:1px solid var(--accent-bd);display:flex;flex-direction:column;transition:transform var(--t-slow) var(--ease);box-shadow:0 -12px 48px rgba(0,0,0,.7);overflow:hidden;padding-bottom:env(safe-area-inset-bottom)}
+.chat-panel{position:fixed;bottom:0;left:50%;transform:translate(-50%,100%);z-index:100001;width:100%;max-width:var(--container);height:90vh;height:90dvh;background:var(--bg);border-radius:24px 24px 0 0;border-top:1px solid var(--accent-bd);display:flex;flex-direction:column;transition:transform var(--t-slow) var(--ease);box-shadow:0 -12px 48px rgba(0,0,0,.7);overflow:hidden;padding-bottom:env(safe-area-inset-bottom)}
 .chat-panel.open{transform:translate(-50%,0)}
 .chat-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:var(--s-3) var(--s-4);padding-top:calc(var(--s-3) + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:var(--s-3);flex-shrink:0}
 .chat-back{width:34px;height:34px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-size:20px;display:flex;align-items:center;justify-content:center;transition:all var(--t-fast);flex-shrink:0}
@@ -2986,9 +2986,9 @@ body::before {
 .friend-msg-btn .msg-dot{position:absolute;top:-3px;right:-3px;min-width:16px;height:16px;padding:0 4px;border-radius:10px;background:var(--danger);color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg3);direction:ltr}
 .friend-menu-btn{width:34px;height:34px;border-radius:10px;background:var(--bg4);border:1px solid var(--border);color:var(--text3);font-size:18px;display:flex;align-items:center;justify-content:center;transition:all var(--t-fast);line-height:1}
 .friend-menu-btn:hover{color:var(--text);border-color:var(--border2)}
-.friend-menu-overlay{position:fixed;inset:0;z-index:450;display:none}
+.friend-menu-overlay{position:fixed;inset:0;z-index:100003;display:none}
 .friend-menu-overlay.open{display:block}
-.friend-menu-popup{position:absolute;background:var(--bg2);border:1px solid var(--border2);border-radius:14px;box-shadow:var(--shadow-3);padding:6px;min-width:200px;z-index:451;animation:menuIn .15s var(--ease)}
+.friend-menu-popup{position:absolute;background:var(--bg2);border:1px solid var(--border2);border-radius:14px;box-shadow:var(--shadow-3);padding:6px;min-width:200px;z-index:100004;animation:menuIn .15s var(--ease)}
 @keyframes menuIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 .friend-menu-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;font-size:13px;font-weight:600;color:var(--text);width:100%;text-align:right;transition:background var(--t-fast);background:transparent;border:none;cursor:pointer}
 .friend-menu-item:hover{background:var(--bg4)}
@@ -2999,7 +2999,7 @@ body::before {
 .blocked-card .search-avatar{filter:grayscale(1)}
 .unblock-btn{padding:7px 14px;border-radius:9px;background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:12px;font-weight:700;transition:all var(--t-fast)}
 .unblock-btn:hover{border-color:var(--green);color:var(--green-2)}
-.profile-overlay{position:fixed;inset:0;z-index:480;background:rgba(0,0,0,.75);opacity:0;pointer-events:none;transition:opacity var(--t-med);display:flex;align-items:center;justify-content:center;padding:var(--s-4);padding-top:calc(var(--s-4) + env(safe-area-inset-top,0px));padding-bottom:calc(var(--s-4) + env(safe-area-inset-bottom,0px))}
+.profile-overlay{position:fixed;inset:0;z-index:100002;background:rgba(0,0,0,.75);opacity:0;pointer-events:none;transition:opacity var(--t-med);display:flex;align-items:center;justify-content:center;padding:var(--s-4);padding-top:calc(var(--s-4) + env(safe-area-inset-top,0px));padding-bottom:calc(var(--s-4) + env(safe-area-inset-bottom,0px))}
 .profile-overlay.open{opacity:1;pointer-events:all}
 .profile-modal{background:var(--bg2);border:1px solid var(--accent-bd);border-radius:24px;width:100%;max-width:420px;max-height:90vh;max-height:90dvh;overflow-y:auto;transform:scale(.92) translateY(20px);transition:transform var(--t-slow) var(--ease);box-shadow:0 24px 64px rgba(0,0,0,.6)}
 .profile-overlay.open .profile-modal{transform:scale(1) translateY(0)}
@@ -3044,9 +3044,9 @@ body::before {
 
 /* v2.2 SOCIAL */
 /* ─── CHAT SYSTEM v2.1 ─── */
-.chat-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity var(--t-med)}
+.chat-overlay{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity var(--t-med)}
 .chat-overlay.open{opacity:1;pointer-events:all}
-.chat-panel{position:fixed;bottom:0;left:50%;transform:translate(-50%,100%);z-index:501;width:100%;max-width:var(--container);height:90vh;height:90dvh;background:var(--bg);border-radius:24px 24px 0 0;border-top:1px solid var(--accent-bd);display:flex;flex-direction:column;transition:transform var(--t-slow) var(--ease);box-shadow:0 -12px 48px rgba(0,0,0,.7);overflow:hidden;padding-bottom:env(safe-area-inset-bottom)}
+.chat-panel{position:fixed;bottom:0;left:50%;transform:translate(-50%,100%);z-index:100001;width:100%;max-width:var(--container);height:90vh;height:90dvh;background:var(--bg);border-radius:24px 24px 0 0;border-top:1px solid var(--accent-bd);display:flex;flex-direction:column;transition:transform var(--t-slow) var(--ease);box-shadow:0 -12px 48px rgba(0,0,0,.7);overflow:hidden;padding-bottom:env(safe-area-inset-bottom)}
 .chat-panel.open{transform:translate(-50%,0)}
 .chat-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:var(--s-3) var(--s-4);padding-top:calc(var(--s-3) + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:var(--s-3);flex-shrink:0}
 .chat-back{width:34px;height:34px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-size:20px;display:flex;align-items:center;justify-content:center;transition:all var(--t-fast);flex-shrink:0}
@@ -3124,9 +3124,9 @@ body::before {
 .friend-menu-btn:hover{color:var(--text);border-color:var(--border2)}
 
 /* ─── CONTEXT MENU ─── */
-.friend-menu-overlay{position:fixed;inset:0;z-index:450;display:none}
+.friend-menu-overlay{position:fixed;inset:0;z-index:100003;display:none}
 .friend-menu-overlay.open{display:block}
-.friend-menu-popup{position:absolute;background:var(--bg2);border:1px solid var(--border2);border-radius:14px;box-shadow:var(--shadow-3);padding:6px;min-width:190px;z-index:451;animation:menuIn .15s var(--ease)}
+.friend-menu-popup{position:absolute;background:var(--bg2);border:1px solid var(--border2);border-radius:14px;box-shadow:var(--shadow-3);padding:6px;min-width:190px;z-index:100004;animation:menuIn .15s var(--ease)}
 @keyframes menuIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 .friend-menu-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;transition:background var(--t-fast);width:100%;text-align:right;background:transparent;border:none}
 .friend-menu-item:hover{background:var(--bg4)}
@@ -3143,7 +3143,7 @@ body::before {
 @media (max-width:380px){.msg{max-width:85%;font-size:13px}.friends-sub-tab{font-size:10px;padding:8px 2px}}
 
 /* ─── USER PROFILE MODAL v2.2 ─── */
-.profile-overlay{position:fixed;inset:0;z-index:480;background:rgba(0,0,0,.75);opacity:0;pointer-events:none;transition:opacity var(--t-med);display:flex;align-items:center;justify-content:center;padding:var(--s-4);padding-top:calc(var(--s-4) + env(safe-area-inset-top,0px));padding-bottom:calc(var(--s-4) + env(safe-area-inset-bottom,0px))}
+.profile-overlay{position:fixed;inset:0;z-index:100002;background:rgba(0,0,0,.75);opacity:0;pointer-events:none;transition:opacity var(--t-med);display:flex;align-items:center;justify-content:center;padding:var(--s-4);padding-top:calc(var(--s-4) + env(safe-area-inset-top,0px));padding-bottom:calc(var(--s-4) + env(safe-area-inset-bottom,0px))}
 .profile-overlay.open{opacity:1;pointer-events:all}
 .profile-modal{background:var(--bg2);border:1px solid var(--accent-bd);border-radius:24px;width:100%;max-width:420px;max-height:90vh;max-height:90dvh;overflow-y:auto;transform:scale(.92) translateY(20px);transition:transform var(--t-slow) var(--ease);box-shadow:0 24px 64px rgba(0,0,0,.6);-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .profile-overlay.open .profile-modal{transform:scale(1) translateY(0)}
@@ -7107,19 +7107,14 @@ const Social = (() => {
   }
 
   async function openChat(peer) {
-    console.log('[openChat] called with peer:', peer);
-    console.log('[openChat] state.user:', !!state.user, 'state.profile:', !!state.profile);
     if (!state.user || !state.profile) {
-      console.warn('[openChat] BLOCKED: missing user or profile');
       Toast.show('يجب تسجيل الدخول أولاً', 'warn');
       return;
     }
     if (state.blocked.some(b => b.uid === peer.uid)) {
-      console.warn('[openChat] BLOCKED: user is blocked');
       Toast.show('هذا المستخدم محظور. ألغِ الحظر أولاً', 'warn');
       return;
     }
-    console.log('[openChat] proceeding to open chat panel');
     state.activeChat = {
       peerUid: peer.uid,
       peerName: peer.displayName || peer.username,
@@ -7754,16 +7749,9 @@ const Social = (() => {
   }
 
   async function openProfile(user) {
-    console.log('[openProfile] called with user:', user);
-    console.log('[openProfile] state.user:', !!state.user);
-    if (!state.user || !user) {
-      console.warn('[openProfile] BLOCKED: missing state.user or user');
-      return;
-    }
+    if (!state.user || !user) return;
     const overlay = $('#profileOverlay');
-    console.log('[openProfile] overlay element:', overlay);
     if (!overlay) { Logger.warn('Social.openProfile', 'overlay not found'); return; }
-    console.log('[openProfile] proceeding to render profile');
     const isMe = user.uid === state.user.uid;
     const isFriend = state.friends.some(f => f.uid === user.uid);
     const isBlocked = state.blocked.some(b => b.uid === user.uid);
