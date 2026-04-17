@@ -8396,5 +8396,279 @@ const Tests = (() => {
 })();
 
 </script>
+<!-- ═══════════════════════════════════════════════════
+  ملحق View Profile v2.2 - أضفه قبل </body> مباشرة
+═══════════════════════════════════════════════════ -->
+
+<style>
+/* ═══ Profile Modal Styles ═══ */
+.profile-overlay{position:fixed;inset:0;z-index:480;background:rgba(0,0,0,.75);opacity:0;pointer-events:none;transition:opacity .25s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;justify-content:center;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.profile-overlay.open{opacity:1;pointer-events:all}
+.profile-modal{background:var(--bg2);border:1px solid var(--accent-bd);border-radius:24px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;transform:scale(.92) translateY(20px);transition:transform .4s cubic-bezier(.4,0,.2,1);box-shadow:0 24px 64px rgba(0,0,0,.6)}
+.profile-overlay.open .profile-modal{transform:scale(1) translateY(0)}
+.profile-hero{position:relative;padding:24px 16px 20px;background:linear-gradient(180deg,var(--accent-dim) 0%,transparent 100%);border-radius:24px 24px 0 0;text-align:center}
+.profile-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+.profile-close-btn{position:absolute;top:12px;left:12px;width:34px;height:34px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2}
+.profile-close-btn:hover{border-color:var(--accent);color:var(--accent)}
+.profile-big-avatar{width:96px;height:96px;border-radius:50%;background:var(--bg5);display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:800;color:var(--accent-2);margin:0 auto 12px;position:relative;border:3px solid var(--border2)}
+.profile-big-avatar.bronze{background:linear-gradient(135deg,#cd7f32,#e8a060);color:#0a0600;border-color:#cd7f32;box-shadow:0 0 24px rgba(205,127,50,.35)}
+.profile-big-avatar.gold{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#0a0600;border-color:var(--accent);box-shadow:0 0 24px var(--accent-glow)}
+.profile-big-avatar.obsidian{background:linear-gradient(135deg,#a0a0c0,#d0d0e8);color:#0a0600;border-color:#d0d0e8;box-shadow:0 0 28px rgba(208,208,232,.4)}
+.profile-tier-badge{position:absolute;bottom:-4px;right:50%;transform:translateX(50%);background:var(--bg2);border:1.5px solid var(--accent);color:var(--accent-2);font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.profile-name{font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px}
+.profile-handle{font-size:13px;color:var(--text3);direction:ltr;font-family:'Courier New',monospace}
+.profile-member-since{font-size:11px;color:var(--text3);margin-top:8px}
+.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 16px 16px}
+.profile-stat-box{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:12px 8px;text-align:center}
+.profile-stat-icon{font-size:20px;margin-bottom:4px}
+.profile-stat-num{font-size:20px;font-weight:800;color:var(--accent-2);line-height:1.1}
+.profile-stat-lbl{font-size:9px;color:var(--text3);margin-top:3px}
+.profile-section{padding:0 16px 16px}
+.profile-section-title{font-size:10px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:8px;font-weight:700}
+.profile-info-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;margin-bottom:6px}
+.profile-info-row .lbl{font-size:12px;color:var(--text3)}
+.profile-info-row .val{font-size:13px;color:var(--text);font-weight:600}
+.profile-actions{display:flex;flex-direction:column;gap:8px;padding:0 16px 16px}
+.profile-actions .pa-row{display:flex;gap:8px;width:100%}
+.profile-action-btn{flex:1;padding:12px;border-radius:12px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid transparent;cursor:pointer;font-family:inherit}
+.profile-action-btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#0a0600;box-shadow:0 3px 12px var(--accent-glow)}
+.profile-action-btn.secondary{background:var(--bg3);border-color:var(--border2);color:var(--text)}
+.profile-action-btn.danger{background:transparent;border-color:rgba(239,68,68,.35);color:var(--danger)}
+.profile-action-btn.accept{background:var(--green-dim);border-color:rgba(16,185,129,.4);color:var(--green-2)}
+.profile-relationship-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:16px;font-size:11px;font-weight:700;margin-top:8px;background:var(--accent-dim);border:1px solid var(--accent-bd);color:var(--accent-2)}
+.profile-relationship-badge.friend{background:var(--green-dim);border-color:rgba(16,185,129,.4);color:var(--green-2)}
+.profile-relationship-badge.pending{background:var(--bg4);border-color:var(--border2);color:var(--text2)}
+.friend-name,.friend-avatar{cursor:pointer}
+@media(max-width:380px){.profile-big-avatar{width:80px;height:80px;font-size:32px}.profile-name{font-size:18px}}
+</style>
+
+<!-- Profile Modal HTML -->
+<div class="profile-overlay" id="profileOverlay">
+  <div class="profile-modal">
+    <div class="profile-hero">
+      <button class="profile-close-btn" onclick="window.__closeProfile()">✕</button>
+      <div class="profile-big-avatar" id="_profAv">?</div>
+      <div class="profile-name" id="_profName">—</div>
+      <div class="profile-handle" id="_profHandle">@...</div>
+      <div id="_profRel"></div>
+      <div class="profile-member-since" id="_profMember"></div>
+    </div>
+    <div class="profile-stats">
+      <div class="profile-stat-box">
+        <div class="profile-stat-icon">🔥</div>
+        <div class="profile-stat-num" id="_profStreak">0</div>
+        <div class="profile-stat-lbl">سلسلة حالية</div>
+      </div>
+      <div class="profile-stat-box">
+        <div class="profile-stat-icon">🏆</div>
+        <div class="profile-stat-num" id="_profMax">0</div>
+        <div class="profile-stat-lbl">أعلى سلسلة</div>
+      </div>
+      <div class="profile-stat-box">
+        <div class="profile-stat-icon">👥</div>
+        <div class="profile-stat-num" id="_profFr">0</div>
+        <div class="profile-stat-lbl">أصدقاء</div>
+      </div>
+    </div>
+    <div class="profile-section">
+      <div class="profile-section-title">المستوى</div>
+      <div class="profile-info-row">
+        <span class="lbl"><span id="_profTierIcon">🌱</span> المستوى الحالي</span>
+        <span class="val" id="_profTier">مبتدئ</span>
+      </div>
+      <div class="profile-info-row">
+        <span class="lbl">📊 التقدّم للتالي</span>
+        <span class="val" id="_profNext">—</span>
+      </div>
+    </div>
+    <div class="profile-actions" id="_profActions"></div>
+  </div>
+</div>
+
+<script>
+/* ═══ View Profile v2.2 - Standalone Extension ═══ */
+(function() {
+  'use strict';
+  
+  // انتظر حتى يكون Firebase و Social جاهزين
+  function init() {
+    if (!window.FB || typeof Social === 'undefined') {
+      setTimeout(init, 500);
+      return;
+    }
+    console.log('[Profile v2.2] Extension loaded');
+    attachClickHandlers();
+    observeFriendList();
+  }
+  
+  // تحديد المستوى حسب السلسلة
+  function tierOf(streak) {
+    if (streak >= 90) return { name: 'أوبسيديان', icon: '🖤', cls: 'obsidian', next: null };
+    if (streak >= 60) return { name: 'ذهبي', icon: '🥇', cls: 'gold', next: { name: 'أوبسيديان', at: 90 } };
+    if (streak >= 30) return { name: 'برونزي', icon: '🥉', cls: 'bronze', next: { name: 'ذهبي', at: 60 } };
+    return { name: 'مبتدئ', icon: '🌱', cls: '', next: { name: 'برونزي', at: 30 } };
+  }
+  
+  function formatDate(ts) {
+    if (!ts) return '';
+    try {
+      var d = typeof ts === 'string' ? new Date(ts) : new Date(ts);
+      var months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+      return '📅 عضو منذ ' + months[d.getMonth()] + ' ' + d.getFullYear();
+    } catch(e) { return ''; }
+  }
+  
+  // جلب بيانات المستخدم وعرض البروفايل
+  async function showProfile(uid) {
+    var FB = window.FB;
+    var currentUser = Social.getCurrentUser && Social.getCurrentUser();
+    if (!currentUser) return;
+    
+    var overlay = document.getElementById('profileOverlay');
+    if (!overlay) return;
+    
+    // جلب البيانات من Firestore
+    var userData = null;
+    var friendCount = 0;
+    try {
+      var snap = await FB.getDoc(FB.doc(FB.db, 'users', uid));
+      if (snap.exists()) userData = Object.assign({ id: snap.id }, snap.data());
+      
+      // عدّ الأصدقاء
+      var frQuery = FB.query(
+        FB.collection(FB.db, 'friendships'),
+        FB.where('users', 'array-contains', uid)
+      );
+      var frSnap = await FB.getDocs(frQuery);
+      friendCount = frSnap.size;
+    } catch(e) {
+      console.error('Profile fetch error:', e);
+    }
+    
+    if (!userData) {
+      alert('فشل جلب بيانات المستخدم');
+      return;
+    }
+    
+    var isMe = uid === currentUser.uid;
+    var name = userData.name || 'مستخدم';
+    var username = userData.username || '';
+    var streak = userData.streak || 0;
+    var maxStreak = userData.maxStreak || 0;
+    var tier = tierOf(streak);
+    
+    // ملء البيانات
+    var avatar = document.getElementById('_profAv');
+    avatar.className = 'profile-big-avatar ' + tier.cls;
+    avatar.innerHTML = '';
+    avatar.appendChild(document.createTextNode(name.charAt(0).toUpperCase()));
+    if (tier.cls) {
+      var badge = document.createElement('span');
+      badge.className = 'profile-tier-badge';
+      badge.textContent = tier.icon + ' ' + tier.name;
+      avatar.appendChild(badge);
+    }
+    
+    document.getElementById('_profName').textContent = name + (isMe ? ' (أنت)' : '');
+    document.getElementById('_profHandle').textContent = '@' + username;
+    document.getElementById('_profMember').textContent = formatDate(userData.createdAt);
+    document.getElementById('_profStreak').textContent = streak;
+    document.getElementById('_profMax').textContent = maxStreak;
+    document.getElementById('_profFr').textContent = friendCount;
+    document.getElementById('_profTierIcon').textContent = tier.icon;
+    document.getElementById('_profTier').textContent = tier.name;
+    document.getElementById('_profNext').textContent = tier.next
+      ? (tier.next.at - streak) + ' يوم للوصول لـ ' + tier.next.name
+      : 'وصلت لأعلى مستوى 👑';
+    
+    // شارة العلاقة
+    var rel = document.getElementById('_profRel');
+    rel.innerHTML = '';
+    if (isMe) {
+      rel.innerHTML = '<span class="profile-relationship-badge">👤 هذا ملفك</span>';
+    } else {
+      rel.innerHTML = '<span class="profile-relationship-badge friend">✓ صديق</span>';
+    }
+    
+    // الأزرار
+    var actions = document.getElementById('_profActions');
+    actions.innerHTML = '';
+    if (isMe) {
+      actions.innerHTML = '<div class="pa-row"><button class="profile-action-btn secondary" onclick="window.__closeProfile()">إغلاق</button></div>';
+    } else {
+      actions.innerHTML = '<div class="pa-row"><button class="profile-action-btn secondary" onclick="window.__closeProfile()">إغلاق</button></div>';
+    }
+    
+    overlay.classList.add('open');
+  }
+  
+  // ربط الأحداث على الأصدقاء
+  function attachClickHandlers() {
+    document.addEventListener('click', function(e) {
+      // ابحث عن بطاقة صديق
+      var card = e.target.closest('.friend-card');
+      if (!card) return;
+      
+      // تجاهل الضغط على الأزرار الموجودة
+      if (e.target.closest('.friend-del-btn')) return;
+      if (e.target.closest('.friend-req-actions')) return;
+      if (e.target.closest('button')) return;
+      
+      // استخرج uid من data-friendship-id أو البحث في DOM
+      var username = card.querySelector('.friend-username');
+      if (!username) return;
+      var handle = username.textContent.replace('@','').trim().split('•')[0].trim();
+      if (!handle || handle === '...') return;
+      
+      // ابحث عن uid من usernames collection
+      lookupAndShow(handle);
+    });
+  }
+  
+  async function lookupAndShow(username) {
+    var FB = window.FB;
+    try {
+      var snap = await FB.getDoc(FB.doc(FB.db, 'usernames', username));
+      if (snap.exists()) {
+        showProfile(snap.data().uid);
+      }
+    } catch(e) {
+      console.error('Lookup error:', e);
+    }
+  }
+  
+  // مراقبة إضافة بطاقات جديدة (لأن القائمة ديناميكية)
+  function observeFriendList() {
+    var target = document.getElementById('friendsList');
+    if (!target) return;
+    // لا نحتاج observer لأن click listener على document يعمل تلقائياً
+  }
+  
+  // دالة الإغلاق العامة
+  window.__closeProfile = function() {
+    var overlay = document.getElementById('profileOverlay');
+    if (overlay) overlay.classList.remove('open');
+  };
+  
+  // إغلاق بالضغط خارج النافذة
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'profileOverlay') {
+      window.__closeProfile();
+    }
+  });
+  
+  // إغلاق بـ Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') window.__closeProfile();
+  });
+  
+  // ابدأ التشغيل
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
 </body>
 </html>
