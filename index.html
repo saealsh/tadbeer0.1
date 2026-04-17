@@ -4366,10 +4366,36 @@ body::before {
           signInWithPopup: (a, provider) => auth.signInWithPopup(provider),
           sendPasswordResetEmail: (a, email) => auth.sendPasswordResetEmail(email),
           updateProfile: (user, data) => user.updateProfile(data),
-          doc: function(dbOrColl, collName, docId) {
-            if (arguments.length === 3) return dbOrColl.collection(collName).doc(docId);
-            if (arguments.length === 2) return dbOrColl.doc(collName);
-            return dbOrColl;
+          doc: function() {
+            // يدعم أنماط متعددة:
+            //   doc(db, 'users', uid)                          → /users/uid
+            //   doc(db, 'users', uid, 'friends', fid)          → /users/uid/friends/fid
+            //   doc(db, 'chats', cid, 'messages', mid)         → /chats/cid/messages/mid
+            //   doc(collRef)                                   → مرجع جاهز
+            //   doc(db, pathSegment)                           → db.doc(pathSegment)
+            var args = Array.prototype.slice.call(arguments);
+            if (args.length === 1) return args[0];
+            if (args.length === 2) {
+              // doc(db, 'collection/id') أو doc(collRef, 'id')
+              if (args[0] && typeof args[0].doc === 'function') return args[0].doc(args[1]);
+              return args[0];
+            }
+            // 3+ وسائط: (db, coll1, id1, coll2, id2, ...)
+            var db = args[0];
+            var ref = db;
+            for (var i = 1; i < args.length; i += 2) {
+              var coll = args[i];
+              var id = args[i + 1];
+              if (ref.collection) {
+                ref = ref.collection(coll);
+              } else {
+                return null;
+              }
+              if (id != null) {
+                ref = ref.doc(id);
+              }
+            }
+            return ref;
           },
           setDoc: (docRef, data) => docRef.set(data),
           getDoc: async (docRef) => {
@@ -4383,7 +4409,22 @@ body::before {
           },
           updateDoc: (docRef, data) => docRef.update(data),
           deleteDoc: (docRef) => docRef.delete(),
-          collection: (db, name) => db.collection(name),
+          collection: function() {
+            // يدعم:
+            //   collection(db, 'users')                        → /users
+            //   collection(db, 'users', uid, 'friends')        → /users/uid/friends
+            //   collection(db, 'chats', cid, 'messages')       → /chats/cid/messages
+            var args = Array.prototype.slice.call(arguments);
+            if (args.length < 2) return args[0];
+            var ref = args[0];
+            for (var i = 1; i < args.length; i += 2) {
+              var coll = args[i];
+              var id = args[i + 1];
+              if (ref.collection) ref = ref.collection(coll);
+              if (id != null && ref.doc) ref = ref.doc(id);
+            }
+            return ref;
+          },
           query: (collRef, ...filters) => {
             let q = collRef;
             filters.forEach(f => { if (f && f._apply) q = f._apply(q); });
