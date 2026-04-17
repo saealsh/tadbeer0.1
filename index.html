@@ -6910,84 +6910,86 @@ const Social = (() => {
   }
 
   async function loadProfile(user) {
-    // retry helper: يحاول العملية مرة، إن فشلت بسبب permissions ينتظر ويعيد
-    async function retryOp(fn, retries = 3) {
-      for (let i = 0; i < retries; i++) {
-        try {
-          return await fn();
-        } catch (e) {
-          const msg = (e && e.message) || '';
-          const isPermsError = msg.includes('permissions') || msg.includes('insufficient');
-          if (i < retries - 1 && isPermsError) {
-            // انتظر قبل إعادة المحاولة (token propagation)
-            await new Promise(r => setTimeout(r, 500 * (i + 1)));
-            continue;
-          }
-          throw e;
+    try {
+      // أنشئ ملفاً افتراضياً فوراً (لتجنب null حتى لو فشلت القراءة)
+      const fallbackUsername = user.email 
+        ? user.email.split('@')[0].replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 15) 
+        : 'user';
+      const fallbackDisplay = user.displayName || fallbackUsername || 'مستخدم';
+      
+      state.profile = {
+        uid: user.uid,
+        email: user.email || '',
+        username: fallbackUsername,
+        displayName: fallbackDisplay,
+        streak: 0,
+        maxStreak: 0
+      };
+      
+      // تأكد من token قبل أي عملية
+      try { if (user.getIdToken) await user.getIdToken(true); } catch {}
+      
+      // حاول قراءة الملف من قاعدة البيانات
+      const ref = window.FB.doc(window.FB.db, 'users', user.uid);
+      let snap;
+      try {
+        snap = await window.FB.getDoc(ref);
+      } catch (readErr) {
+        Logger.warn('Social.loadProfile.read', readErr.message);
+        // أعد المحاولة بعد ثانية
+        await new Promise(r => setTimeout(r, 1000));
+        try { snap = await window.FB.getDoc(ref); } catch {
+          // ما عاد تقدر تقرأ — استخدم الافتراضي
+          return;
         }
       }
-    }
-    
-    try {
-      // تأكد أن token الحالية سارية
-      try {
-        if (user.getIdToken) await user.getIdToken(false);
-      } catch (e) { /* ignore */ }
       
-      const ref = window.FB.doc(window.FB.db, 'users', user.uid);
-      const snap = await retryOp(() => window.FB.getDoc(ref));
-      
-      if (snap.exists()) {
+      if (snap && snap.exists && snap.exists()) {
         const data = snap.data() || {};
-        const safeProfile = {
+        // حدّث الملف من قاعدة البيانات
+        state.profile = {
           uid: data.uid || user.uid,
           email: data.email || user.email || '',
-          username: data.username || (user.email ? user.email.split('@')[0].replace(/[^a-z0-9]/gi, '').toLowerCase() : 'user'),
-          displayName: data.displayName || user.displayName || (user.email ? user.email.split('@')[0] : 'مستخدم'),
+          username: data.username || fallbackUsername,
+          displayName: data.displayName || fallbackDisplay,
           streak: typeof data.streak === 'number' ? data.streak : 0,
           maxStreak: typeof data.maxStreak === 'number' ? data.maxStreak : 0,
           createdAt: data.createdAt || window.FB.serverTimestamp()
         };
-        state.profile = safeProfile;
+        // صحّح الملف إن كانت فيه حقول ناقصة
         if (!data.displayName || !data.username) {
           try {
             await window.FB.updateDoc(ref, {
-              displayName: safeProfile.displayName,
-              username: safeProfile.username
+              displayName: state.profile.displayName,
+              username: state.profile.username
             });
-          } catch (e) { Logger.warn('Social.fixProfile', e.message); }
+          } catch (e) { /* ignore */ }
         }
       } else {
-        const username = await generateUniqueUsername(user.email);
-        const displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'مستخدم');
-        const profile = {
-          uid: user.uid,
-          email: user.email || '',
-          username: username,
-          displayName: displayName,
-          createdAt: window.FB.serverTimestamp(),
-          streak: 0,
-          maxStreak: 0
-        };
-        await retryOp(() => window.FB.setDoc(ref, profile));
-        state.profile = profile;
+        // الملف غير موجود — أنشئه
+        try {
+          const username = await generateUniqueUsername(user.email || 'user@a.com');
+          const profile = {
+            uid: user.uid,
+            email: user.email || '',
+            username: username,
+            displayName: fallbackDisplay,
+            createdAt: window.FB.serverTimestamp(),
+            streak: 0,
+            maxStreak: 0
+          };
+          await window.FB.setDoc(ref, profile);
+          state.profile = profile;
+        } catch (e) {
+          Logger.warn('Social.loadProfile.create', e.message);
+          // استخدم الافتراضي
+        }
       }
-      syncStreak();
+      
+      try { syncStreak(); } catch {}
     } catch (e) {
       Logger.error('Social.loadProfile', e);
-      // إذا فشل بسبب permissions حتى بعد إعادة المحاولة، خزّن نسخة محلية مؤقتة
-      if (!state.profile) {
-        state.profile = {
-          uid: user.uid,
-          email: user.email || '',
-          username: user.email ? user.email.split('@')[0].replace(/[^a-z0-9]/gi, '').toLowerCase() : 'user',
-          displayName: user.displayName || (user.email ? user.email.split('@')[0] : 'مستخدم'),
-          streak: 0,
-          maxStreak: 0
-        };
-        // أعد المحاولة بعد 3 ثواني
-        setTimeout(() => { try { loadProfile(user); } catch {} }, 3000);
-      }
+      // الملف الافتراضي موجود، لا مشكلة
     }
   }
 
@@ -7746,7 +7748,7 @@ const Social = (() => {
   async function openProfile(user) {
     if (!state.user || !user) return;
     const overlay = $('#profileOverlay');
-    if (!overlay) return;
+    if (!overlay) { Logger.warn('Social.openProfile', 'overlay not found'); return; }
     const isMe = user.uid === state.user.uid;
     const isFriend = state.friends.some(f => f.uid === user.uid);
     const isBlocked = state.blocked.some(b => b.uid === user.uid);
@@ -7757,6 +7759,8 @@ const Social = (() => {
     let fullProfile = user;
     let friendCount = 0;
     let memberSinceTs = null;
+    
+    // 1) جلب الملف الكامل (يعمل دائماً لأن القواعد تسمح)
     try {
       const ref = window.FB.doc(window.FB.db, 'users', user.uid);
       const snap = await window.FB.getDoc(ref);
@@ -7764,12 +7768,26 @@ const Social = (() => {
         fullProfile = { ...user, ...snap.data() };
         memberSinceTs = fullProfile.createdAt;
       }
-      // عدد أصدقاء الشخص
-      const frSnap = await window.FB.getDocs(
-        window.FB.collection(window.FB.db, 'users', user.uid, 'friends')
-      );
-      friendCount = frSnap.size;
-    } catch (e) { Logger.error('Social.loadProfile', e); }
+    } catch (e) { Logger.warn('Social.openProfile.getUser', e.message); }
+    
+    // 2) محاولة جلب عدد الأصدقاء (قد يفشل إذا ليس الملف الخاص بك - وهذا طبيعي)
+    if (isMe) {
+      friendCount = state.friends.length;
+    } else if (isFriend) {
+      // لو صديق، نحن نقرأ الصداقة من ملفنا — اعرض عدد من ملفنا
+      friendCount = 0; // لا يمكن معرفته بدقة بدون قراءة ملفه
+    } else {
+      try {
+        const frSnap = await window.FB.getDocs(
+          window.FB.collection(window.FB.db, 'users', user.uid, 'friends')
+        );
+        friendCount = frSnap.size;
+      } catch (e) {
+        // permissions error متوقع — اكتبه warning فقط
+        Logger.warn('Social.openProfile.friends', 'cannot count friends (expected)');
+        friendCount = 0;
+      }
+    }
 
     const displayName = fullProfile.displayName || fullProfile.username || '?';
     const username = fullProfile.username || '';
