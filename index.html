@@ -6724,7 +6724,11 @@ const Social = (() => {
   return { init, bindEvents, openAuthModal, renderFriendsTab, get currentUser() { return currentUser; }, get userProfile() { return userProfile; } };
 })();
 
+/* ═══════════════════════════════════════════════════
+   TADBEER — Tests (runs when ?test=1)
+═══════════════════════════════════════════════════ */
 
+const Tests = (() => {
   const { U, Fmt, Store, Storage } = Tadbeer;
   const { Zakat, Sel, Budgets } = App;
 
