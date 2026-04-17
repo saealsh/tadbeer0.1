@@ -7107,11 +7107,19 @@ const Social = (() => {
   }
 
   async function openChat(peer) {
-    if (!state.user || !state.profile) return;
+    console.log('[openChat] called with peer:', peer);
+    console.log('[openChat] state.user:', !!state.user, 'state.profile:', !!state.profile);
+    if (!state.user || !state.profile) {
+      console.warn('[openChat] BLOCKED: missing user or profile');
+      Toast.show('يجب تسجيل الدخول أولاً', 'warn');
+      return;
+    }
     if (state.blocked.some(b => b.uid === peer.uid)) {
+      console.warn('[openChat] BLOCKED: user is blocked');
       Toast.show('هذا المستخدم محظور. ألغِ الحظر أولاً', 'warn');
       return;
     }
+    console.log('[openChat] proceeding to open chat panel');
     state.activeChat = {
       peerUid: peer.uid,
       peerName: peer.displayName || peer.username,
@@ -7746,9 +7754,16 @@ const Social = (() => {
   }
 
   async function openProfile(user) {
-    if (!state.user || !user) return;
+    console.log('[openProfile] called with user:', user);
+    console.log('[openProfile] state.user:', !!state.user);
+    if (!state.user || !user) {
+      console.warn('[openProfile] BLOCKED: missing state.user or user');
+      return;
+    }
     const overlay = $('#profileOverlay');
+    console.log('[openProfile] overlay element:', overlay);
     if (!overlay) { Logger.warn('Social.openProfile', 'overlay not found'); return; }
+    console.log('[openProfile] proceeding to render profile');
     const isMe = user.uid === state.user.uid;
     const isFriend = state.friends.some(f => f.uid === user.uid);
     const isBlocked = state.blocked.some(b => b.uid === user.uid);
@@ -8173,9 +8188,14 @@ const Social = (() => {
     init, bindEvents, renderFriendsTab, syncStreak,
     openChat, closeChat, sendMessage,
     blockUser, unblockUser, setAuthMode,
-    openProfile, closeProfile
+    openProfile, closeProfile,
+    // Debug exposure
+    _state: state
   };
 })();
+
+// expose for debugging
+window.Social = Social;
 
 
 (function bootstrap() {
