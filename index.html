@@ -6876,10 +6876,20 @@ const Social = (() => {
         cleanupSubs();
         state.user = user;
         if (user) {
+          // تأكد أن token وصل قبل أي عملية Firestore
+          try { if (user.getIdToken) await user.getIdToken(false); } catch {}
+          // انتظر قليلاً لضمان أن Firestore سيعرف token
+          await new Promise(r => setTimeout(r, 300));
+          
           await loadProfile(user);
+          
+          // تأخير بسيط بين الاشتراكات لتفادي race conditions
           subscribeToFriends();
+          await new Promise(r => setTimeout(r, 100));
           subscribeToRequests();
+          await new Promise(r => setTimeout(r, 100));
           subscribeToBlocked();
+          await new Promise(r => setTimeout(r, 100));
           subscribeToConversations();
         } else {
           Object.assign(state, {
@@ -6998,59 +7008,85 @@ const Social = (() => {
     return base + Date.now().toString(36).slice(-4);
   }
 
+  function subscribeWithRetry(name, subFn, maxRetries = 3) {
+    let retries = 0;
+    const tryOnce = () => {
+      try {
+        return subFn((err) => {
+          const msg = (err && err.message) || '';
+          const isPermsError = msg.includes('permissions') || msg.includes('insufficient');
+          if (isPermsError && retries < maxRetries) {
+            retries++;
+            Logger.warn('Social.' + name, 'retry #' + retries);
+            setTimeout(tryOnce, 800 * retries);
+          } else {
+            Logger.error('Social.' + name, err);
+          }
+        });
+      } catch (e) { Logger.error('Social.' + name + '.init', e); }
+    };
+    return tryOnce();
+  }
+
   function subscribeToFriends() {
     if (!state.user) return;
-    try {
+    const sub = subscribeWithRetry('friendsSnap', (errCb) => {
       const ref = window.FB.collection(window.FB.db, 'users', state.user.uid, 'friends');
-      state.subs.push(window.FB.onSnapshot(ref, (snap) => {
+      return window.FB.onSnapshot(ref, (snap) => {
         const friends = [];
         snap.forEach(doc => friends.push({ id: doc.id, ...doc.data() }));
         state.friends = friends.sort((a, b) => (b.streak || 0) - (a.streak || 0));
         renderFriendsTab();
-      }, (err) => Logger.error('Social.friendsSnap', err)));
-    } catch (e) { Logger.error('Social.subFriends', e); }
+      }, errCb);
+    });
+    if (sub) state.subs.push(sub);
   }
 
   function subscribeToRequests() {
     if (!state.user) return;
-    try {
+    const subIn = subscribeWithRetry('incomingSnap', (errCb) => {
       const inRef = window.FB.collection(window.FB.db, 'users', state.user.uid, 'incomingRequests');
-      state.subs.push(window.FB.onSnapshot(inRef, (snap) => {
+      return window.FB.onSnapshot(inRef, (snap) => {
         state.incomingReqs = [];
         snap.forEach(doc => state.incomingReqs.push({ id: doc.id, ...doc.data() }));
         renderFriendsTab();
-      }, (err) => Logger.error('Social.incomingSnap', err)));
-
+      }, errCb);
+    });
+    if (subIn) state.subs.push(subIn);
+    
+    const subOut = subscribeWithRetry('outgoingSnap', (errCb) => {
       const outRef = window.FB.collection(window.FB.db, 'users', state.user.uid, 'outgoingRequests');
-      state.subs.push(window.FB.onSnapshot(outRef, (snap) => {
+      return window.FB.onSnapshot(outRef, (snap) => {
         state.outgoingReqs = [];
         snap.forEach(doc => state.outgoingReqs.push({ id: doc.id, ...doc.data() }));
         renderFriendsTab();
-      }, (err) => Logger.error('Social.outgoingSnap', err)));
-    } catch (e) { Logger.error('Social.subRequests', e); }
+      }, errCb);
+    });
+    if (subOut) state.subs.push(subOut);
   }
 
   function subscribeToBlocked() {
     if (!state.user) return;
-    try {
+    const sub = subscribeWithRetry('blockedSnap', (errCb) => {
       const ref = window.FB.collection(window.FB.db, 'users', state.user.uid, 'blocked');
-      state.subs.push(window.FB.onSnapshot(ref, (snap) => {
+      return window.FB.onSnapshot(ref, (snap) => {
         state.blocked = [];
         snap.forEach(doc => state.blocked.push({ id: doc.id, ...doc.data() }));
         renderFriendsTab();
-      }, (err) => Logger.error('Social.blockedSnap', err)));
-    } catch (e) { Logger.error('Social.subBlocked', e); }
+      }, errCb);
+    });
+    if (sub) state.subs.push(sub);
   }
 
   function subscribeToConversations() {
     if (!state.user) return;
-    try {
+    const sub = subscribeWithRetry('convsSnap', (errCb) => {
       const ref = window.FB.query(
         window.FB.collection(window.FB.db, 'users', state.user.uid, 'conversations'),
         window.FB.orderBy('lastMessageAt', 'desc'),
         window.FB.limit(50)
       );
-      state.subs.push(window.FB.onSnapshot(ref, (snap) => {
+      return window.FB.onSnapshot(ref, (snap) => {
         const prevUnreadTotal = state.conversations.reduce((s, c) => s + (c.unread || 0), 0);
         state.conversations = [];
         snap.forEach(doc => state.conversations.push({ id: doc.id, ...doc.data() }));
@@ -7063,8 +7099,9 @@ const Social = (() => {
           }
         }
         renderFriendsTab();
-      }, (err) => Logger.error('Social.convsSnap', err)));
-    } catch (e) { Logger.error('Social.subConvs', e); }
+      }, errCb);
+    });
+    if (sub) state.subs.push(sub);
   }
 
   async function openChat(peer) {
