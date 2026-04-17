@@ -3051,7 +3051,7 @@ body::before {
                 شاهد سلاسلهم (streaks)، تحدَّهم، وتحفّزوا معاً<br>
                 بياناتك المالية تبقى محفوظة في جهازك فقط 🔒
               </div>
-              <button class="sign-in-prompt-btn" id="friendsSignInBtn">🔐 تسجيل الدخول / إنشاء حساب</button>
+              <button class="sign-in-prompt-btn" id="friendsSignInBtn" onclick="(function(){try{document.getElementById('authOverlay').classList.add('open');}catch(e){alert('خطأ في فتح التسجيل');}})();return false;">🔐 تسجيل الدخول / إنشاء حساب</button>
             </div>
           </div>
           
@@ -3321,7 +3321,7 @@ body::before {
 <!-- Auth Modal -->
 <div class="auth-overlay" id="authOverlay" role="dialog" aria-label="تسجيل الدخول">
   <div class="auth-box">
-    <button class="auth-close" id="authCloseBtn" aria-label="إغلاق">✕</button>
+    <button class="auth-close" id="authCloseBtn" onclick="document.getElementById('authOverlay').classList.remove('open');return false;" aria-label="إغلاق">✕</button>
     <div class="auth-head">
       <div class="auth-icon">👤</div>
       <div class="auth-title" id="authTitle">تسجيل الدخول</div>
