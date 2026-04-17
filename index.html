@@ -6900,23 +6900,45 @@ const Social = (() => {
   }
 
   async function loadProfile(user) {
+    // retry helper: يحاول العملية مرة، إن فشلت بسبب permissions ينتظر ويعيد
+    async function retryOp(fn, retries = 3) {
+      for (let i = 0; i < retries; i++) {
+        try {
+          return await fn();
+        } catch (e) {
+          const msg = (e && e.message) || '';
+          const isPermsError = msg.includes('permissions') || msg.includes('insufficient');
+          if (i < retries - 1 && isPermsError) {
+            // انتظر قبل إعادة المحاولة (token propagation)
+            await new Promise(r => setTimeout(r, 500 * (i + 1)));
+            continue;
+          }
+          throw e;
+        }
+      }
+    }
+    
     try {
+      // تأكد أن token الحالية سارية
+      try {
+        if (user.getIdToken) await user.getIdToken(false);
+      } catch (e) { /* ignore */ }
+      
       const ref = window.FB.doc(window.FB.db, 'users', user.uid);
-      const snap = await window.FB.getDoc(ref);
+      const snap = await retryOp(() => window.FB.getDoc(ref));
+      
       if (snap.exists()) {
         const data = snap.data() || {};
-        // تأكد أن الحقول الأساسية ليست undefined (تصحيح الملفات القديمة)
         const safeProfile = {
           uid: data.uid || user.uid,
           email: data.email || user.email || '',
-          username: data.username || user.email?.split('@')[0] || 'user',
+          username: data.username || (user.email ? user.email.split('@')[0].replace(/[^a-z0-9]/gi, '').toLowerCase() : 'user'),
           displayName: data.displayName || user.displayName || (user.email ? user.email.split('@')[0] : 'مستخدم'),
           streak: typeof data.streak === 'number' ? data.streak : 0,
           maxStreak: typeof data.maxStreak === 'number' ? data.maxStreak : 0,
           createdAt: data.createdAt || window.FB.serverTimestamp()
         };
         state.profile = safeProfile;
-        // حدّث الملف في قاعدة البيانات إذا كانت فيه حقول ناقصة
         if (!data.displayName || !data.username) {
           try {
             await window.FB.updateDoc(ref, {
@@ -6937,11 +6959,26 @@ const Social = (() => {
           streak: 0,
           maxStreak: 0
         };
-        await window.FB.setDoc(ref, profile);
+        await retryOp(() => window.FB.setDoc(ref, profile));
         state.profile = profile;
       }
       syncStreak();
-    } catch (e) { Logger.error('Social.loadProfile', e); }
+    } catch (e) {
+      Logger.error('Social.loadProfile', e);
+      // إذا فشل بسبب permissions حتى بعد إعادة المحاولة، خزّن نسخة محلية مؤقتة
+      if (!state.profile) {
+        state.profile = {
+          uid: user.uid,
+          email: user.email || '',
+          username: user.email ? user.email.split('@')[0].replace(/[^a-z0-9]/gi, '').toLowerCase() : 'user',
+          displayName: user.displayName || (user.email ? user.email.split('@')[0] : 'مستخدم'),
+          streak: 0,
+          maxStreak: 0
+        };
+        // أعد المحاولة بعد 3 ثواني
+        setTimeout(() => { try { loadProfile(user); } catch {} }, 3000);
+      }
+    }
   }
 
   async function generateUniqueUsername(email) {
