@@ -3329,13 +3329,13 @@ body::before {
     </div>
     
     <div class="auth-tabs">
-      <button class="auth-tab active" data-auth-mode="signin">تسجيل دخول</button>
-      <button class="auth-tab" data-auth-mode="signup">حساب جديد</button>
+      <button class="auth-tab active" data-auth-mode="signin" onclick="window.__setAuthMode && window.__setAuthMode('signin');return false;">تسجيل دخول</button>
+      <button class="auth-tab" data-auth-mode="signup" onclick="window.__setAuthMode && window.__setAuthMode('signup');return false;">حساب جديد</button>
     </div>
     
     <div class="auth-error" id="authError"></div>
     
-    <form class="auth-form" id="authForm">
+    <form class="auth-form" id="authForm" onsubmit="window.__authSubmit && window.__authSubmit(event);return false;">
       <input type="text" class="auth-input arabic" id="authName" placeholder="اسمك (مثلاً: سعيد)" maxlength="30" style="display:none">
       <input type="text" class="auth-input" id="authUsername" placeholder="اسم المستخدم (بالإنجليزية)" maxlength="20" style="display:none" autocomplete="username">
       <input type="email" class="auth-input" id="authEmail" placeholder="البريد الإلكتروني" autocomplete="email" required>
@@ -3345,13 +3345,13 @@ body::before {
     
     <div class="auth-divider">أو</div>
     
-    <button class="auth-google-btn" id="authGoogleBtn">
+    <button class="auth-google-btn" id="authGoogleBtn" onclick="window.__googleSignIn && window.__googleSignIn();return false;">
       <span class="auth-google-icon">G</span>
       المتابعة بحساب Google
     </button>
     
     <div class="auth-footer">
-      <button id="authForgotBtn" type="button">نسيت كلمة السر؟</button>
+      <button id="authForgotBtn" type="button" onclick="window.__authForgot && window.__authForgot();return false;">نسيت كلمة السر؟</button>
     </div>
   </div>
 </div>
@@ -6662,6 +6662,15 @@ const Social = (() => {
 
   // ─── Bind UI events ───
   function bindEvents() {
+    // Expose to window for inline onclick (iOS Safari fallback)
+    window.__setAuthMode = function(mode) {
+      authMode = mode;
+      updateAuthUI();
+    };
+    window.__authSubmit = function(e) { handleAuthSubmit(e); };
+    window.__googleSignIn = function() { handleGoogleSignIn(); };
+    window.__authForgot = function() { handleForgot(); };
+    
     // Open auth from "sign in" prompt
     $('#friendsSignInBtn')?.addEventListener('click', () => openAuthModal('signin'));
     
@@ -6721,7 +6730,7 @@ const Social = (() => {
     store.subscribe('userName', syncStreak);
   }
 
-  return { init, bindEvents, openAuthModal, renderFriendsTab, get currentUser() { return currentUser; }, get userProfile() { return userProfile; } };
+  return { init, bindEvents, openAuthModal, renderFriendsTab, getCurrentUser: function() { return currentUser; }, getUserProfile: function() { return userProfile; } };
 })();
 
 /* ═══════════════════════════════════════════════════
