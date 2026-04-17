@@ -6904,13 +6904,38 @@ const Social = (() => {
       const ref = window.FB.doc(window.FB.db, 'users', user.uid);
       const snap = await window.FB.getDoc(ref);
       if (snap.exists()) {
-        state.profile = snap.data();
+        const data = snap.data() || {};
+        // تأكد أن الحقول الأساسية ليست undefined (تصحيح الملفات القديمة)
+        const safeProfile = {
+          uid: data.uid || user.uid,
+          email: data.email || user.email || '',
+          username: data.username || user.email?.split('@')[0] || 'user',
+          displayName: data.displayName || user.displayName || (user.email ? user.email.split('@')[0] : 'مستخدم'),
+          streak: typeof data.streak === 'number' ? data.streak : 0,
+          maxStreak: typeof data.maxStreak === 'number' ? data.maxStreak : 0,
+          createdAt: data.createdAt || window.FB.serverTimestamp()
+        };
+        state.profile = safeProfile;
+        // حدّث الملف في قاعدة البيانات إذا كانت فيه حقول ناقصة
+        if (!data.displayName || !data.username) {
+          try {
+            await window.FB.updateDoc(ref, {
+              displayName: safeProfile.displayName,
+              username: safeProfile.username
+            });
+          } catch (e) { Logger.warn('Social.fixProfile', e.message); }
+        }
       } else {
         const username = await generateUniqueUsername(user.email);
+        const displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'مستخدم');
         const profile = {
-          uid: user.uid, email: user.email, username,
-          displayName: user.displayName || user.email.split('@')[0],
-          createdAt: window.FB.serverTimestamp(), streak: 0, maxStreak: 0
+          uid: user.uid,
+          email: user.email || '',
+          username: username,
+          displayName: displayName,
+          createdAt: window.FB.serverTimestamp(),
+          streak: 0,
+          maxStreak: 0
         };
         await window.FB.setDoc(ref, profile);
         state.profile = profile;
@@ -7182,12 +7207,21 @@ const Social = (() => {
 
       await window.FB.setDoc(
         window.FB.doc(window.FB.db, 'users', state.user.uid, 'outgoingRequests', t.uid),
-        { uid: t.uid, username: t.username, displayName: t.displayName, sentAt: window.FB.serverTimestamp() }
+        {
+          uid: t.uid,
+          username: t.username || '',
+          displayName: t.displayName || t.username || 'مستخدم',
+          sentAt: window.FB.serverTimestamp()
+        }
       );
       await window.FB.setDoc(
         window.FB.doc(window.FB.db, 'users', t.uid, 'incomingRequests', state.user.uid),
-        { uid: state.user.uid, username: state.profile.username,
-          displayName: state.profile.displayName, sentAt: window.FB.serverTimestamp() }
+        {
+          uid: state.user.uid,
+          username: state.profile.username || '',
+          displayName: state.profile.displayName || state.profile.username || 'مستخدم',
+          sentAt: window.FB.serverTimestamp()
+        }
       );
       Toast.show('تم إرسال الطلب 📤', 'success');
       const input = $('#userSearchInput'); if (input) input.value = '';
@@ -7203,15 +7237,25 @@ const Social = (() => {
     try {
       await window.FB.setDoc(
         window.FB.doc(window.FB.db, 'users', state.user.uid, 'friends', req.uid),
-        { uid: req.uid, username: req.username, displayName: req.displayName,
-          streak: 0, maxStreak: 0, friendsSince: window.FB.serverTimestamp() }
+        {
+          uid: req.uid,
+          username: req.username || '',
+          displayName: req.displayName || req.username || 'مستخدم',
+          streak: 0,
+          maxStreak: 0,
+          friendsSince: window.FB.serverTimestamp()
+        }
       );
       await window.FB.setDoc(
         window.FB.doc(window.FB.db, 'users', req.uid, 'friends', state.user.uid),
-        { uid: state.user.uid, username: state.profile.username,
-          displayName: state.profile.displayName,
-          streak: state.profile.streak || 0, maxStreak: state.profile.maxStreak || 0,
-          friendsSince: window.FB.serverTimestamp() }
+        {
+          uid: state.user.uid,
+          username: state.profile.username || '',
+          displayName: state.profile.displayName || state.profile.username || 'مستخدم',
+          streak: state.profile.streak || 0,
+          maxStreak: state.profile.maxStreak || 0,
+          friendsSince: window.FB.serverTimestamp()
+        }
       );
       await window.FB.deleteDoc(window.FB.doc(window.FB.db, 'users', state.user.uid, 'incomingRequests', req.uid));
       await window.FB.deleteDoc(window.FB.doc(window.FB.db, 'users', req.uid, 'outgoingRequests', state.user.uid));
