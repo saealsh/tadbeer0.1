@@ -8605,20 +8605,43 @@ const App = (() => {
     },
 
     calcSpent(budgetName, catSpend) {
+      // استخدم regex أدق للإيموجي (لا يطابق الأحرف العربية)
+      const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F000}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{1F100}-\u{1F1FF}]/u;
       const extractEmoji = (s) => {
-        const matches = [...s.matchAll(/\p{Emoji}/gu)];
-        return matches[0]?.[0] || '';
+        if (!s) return '';
+        const m = s.match(emojiRegex);
+        return m ? m[0] : '';
       };
-      const extractText = (s) => s.replace(/[\p{Emoji}]/gu, '').trim();
+      const extractText = (s) => {
+        if (!s) return '';
+        return s.replace(new RegExp(emojiRegex.source, 'gu'), '').trim();
+      };
+      
       const bE = extractEmoji(budgetName);
       const bT = extractText(budgetName);
       let total = 0;
+      
       for (const [cat, amt] of Object.entries(catSpend)) {
         if (!cat || cat === '➕') continue;
         const cE = extractEmoji(cat);
         const cT = extractText(cat);
-        if (bE && cE && bE === cE) total += amt;
-        else if (bT && cT && (bT.includes(cT) || cT.includes(bT))) total += amt;
+        
+        // طابق بالإيموجي أولاً (أدق)
+        if (bE && cE && bE === cE) {
+          total += amt;
+          continue;
+        }
+        // أو بالنص إن وُجد نص في كليهما
+        if (bT && cT && bT.length > 1 && cT.length > 1) {
+          if (bT.includes(cT) || cT.includes(bT)) {
+            total += amt;
+            continue;
+          }
+        }
+        // أو المطابقة الكاملة (إيموجي بس في البادجت + نفس الإيموجي في المصروف)
+        if (budgetName === cat) {
+          total += amt;
+        }
       }
       return total;
     }
@@ -9193,9 +9216,11 @@ const Renderers = (() => {
     }
     cont.innerHTML = '';
     const cats = Sel.categorySpending(y, m);
+    console.warn('[DEBUG] budgets: cats=', cats, 'budgets=', d.budgets.map(b => b.name));
     let exceededCount = 0;
     for (const b of d.budgets) {
       const spent = App.Budgets.calcSpent(b.name, cats);
+      console.warn('[DEBUG] budget', b.name, 'limit=', b.limit, 'spent=', spent);
       const pct = b.limit > 0 ? Math.min(100, Math.round((spent / b.limit) * 100)) : 0;
       const remaining = b.limit - spent;
       const cls = pct >= 100 ? 'danger' : pct >= 80 ? 'warn' : '';
