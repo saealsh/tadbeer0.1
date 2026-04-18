@@ -8605,8 +8605,9 @@ const App = (() => {
     },
 
     calcSpent(budgetName, catSpend) {
-      // استخدم regex أدق للإيموجي (لا يطابق الأحرف العربية)
+      // Regex دقيق للإيموجي
       const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F000}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{1F100}-\u{1F1FF}]/u;
+      
       const extractEmoji = (s) => {
         if (!s) return '';
         const m = s.match(emojiRegex);
@@ -8617,29 +8618,67 @@ const App = (() => {
         return s.replace(new RegExp(emojiRegex.source, 'gu'), '').trim();
       };
       
-      const bE = extractEmoji(budgetName);
-      const bT = extractText(budgetName);
-      let total = 0;
+      // 🧠 تصنيفات ذكية: مطابقات معنوية عربية-إيموجي
+      const SMART_CATEGORIES = {
+        // أكل وطعام → 🍔
+        '🍔': ['أكل', 'طعام', 'مطعم', 'مطاعم', 'غداء', 'عشاء', 'فطور', 'وجبة', 'برجر', 'بيتزا', 'شاورما', 'دجاج', 'كبسة'],
+        // مواصلات → 🚗
+        '🚗': ['مواصلات', 'بنزين', 'وقود', 'سيارة', 'تكسي', 'أوبر', 'كريم', 'نقل'],
+        // تسوق → 🛒
+        '🛒': ['تسوق', 'شراء', 'سوبرماركت', 'بقالة', 'ماركت', 'هايبر', 'كارفور', 'دانوب', 'بنده', 'ملابس'],
+        // قهوة → ☕
+        '☕': ['قهوة', 'كوفي', 'ستاربكس', 'شاي', 'مشروب', 'مشروبات', 'كافيه', 'كابتشينو'],
+        // ترفيه → 🎬
+        '🎬': ['ترفيه', 'سينما', 'فيلم', 'مسرح', 'العاب', 'ألعاب', 'بلايستيشن', 'نادي', 'رحلة'],
+        // سكن → 🏠
+        '🏠': ['بيت', 'إيجار', 'ايجار', 'سكن', 'كهرباء', 'ماء', 'إنترنت', 'انترنت', 'صيانة'],
+        // جوال/فواتير → 📱
+        '📱': ['جوال', 'اتصالات', 'stc', 'موبايلي', 'زين', 'فاتورة', 'فواتير', 'نت'],
+        // صحة → 💊
+        '💊': ['دواء', 'صيدلية', 'مستشفى', 'طبيب', 'عيادة', 'صحة'],
+        // هدية → 🎁
+        '🎁': ['هدية', 'هدايا', 'عيدية', 'مناسبة'],
+      };
       
-      for (const [cat, amt] of Object.entries(catSpend)) {
-        if (!cat || cat === '➕') continue;
-        const cE = extractEmoji(cat);
-        const cT = extractText(cat);
+      // دالة: هل هذا اسم budget يتطابق مع هذا cat؟
+      const categoriesMatch = (bName, cName) => {
+        // 1) مطابقة مباشرة
+        if (bName === cName) return true;
         
-        // طابق بالإيموجي أولاً (أدق)
-        if (bE && cE && bE === cE) {
-          total += amt;
-          continue;
-        }
-        // أو بالنص إن وُجد نص في كليهما
+        const bE = extractEmoji(bName);
+        const bT = extractText(bName).toLowerCase();
+        const cE = extractEmoji(cName);
+        const cT = extractText(cName).toLowerCase();
+        
+        // 2) إيموجي نفسه
+        if (bE && cE && bE === cE) return true;
+        
+        // 3) نص مشابه (في كل الاتجاهين)
         if (bT && cT && bT.length > 1 && cT.length > 1) {
-          if (bT.includes(cT) || cT.includes(bT)) {
-            total += amt;
-            continue;
+          if (bT.includes(cT) || cT.includes(bT)) return true;
+        }
+        
+        // 4) تصنيفات ذكية - نص البادجت يطابق إيموجي المصروف
+        if (bT && cE && SMART_CATEGORIES[cE]) {
+          for (const keyword of SMART_CATEGORIES[cE]) {
+            if (bT.includes(keyword) || keyword.includes(bT)) return true;
           }
         }
-        // أو المطابقة الكاملة (إيموجي بس في البادجت + نفس الإيموجي في المصروف)
-        if (budgetName === cat) {
+        
+        // 5) تصنيفات ذكية - إيموجي البادجت يطابق نص المصروف
+        if (bE && cT && SMART_CATEGORIES[bE]) {
+          for (const keyword of SMART_CATEGORIES[bE]) {
+            if (cT.includes(keyword) || keyword.includes(cT)) return true;
+          }
+        }
+        
+        return false;
+      };
+      
+      let total = 0;
+      for (const [cat, amt] of Object.entries(catSpend)) {
+        if (!cat || cat === '➕') continue;
+        if (categoriesMatch(budgetName, cat)) {
           total += amt;
         }
       }
@@ -9216,11 +9255,9 @@ const Renderers = (() => {
     }
     cont.innerHTML = '';
     const cats = Sel.categorySpending(y, m);
-    console.warn('[DEBUG] budgets: cats=', cats, 'budgets=', d.budgets.map(b => b.name));
     let exceededCount = 0;
     for (const b of d.budgets) {
       const spent = App.Budgets.calcSpent(b.name, cats);
-      console.warn('[DEBUG] budget', b.name, 'limit=', b.limit, 'spent=', spent);
       const pct = b.limit > 0 ? Math.min(100, Math.round((spent / b.limit) * 100)) : 0;
       const remaining = b.limit - spent;
       const cls = pct >= 100 ? 'danger' : pct >= 80 ? 'warn' : '';
