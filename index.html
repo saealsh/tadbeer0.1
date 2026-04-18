@@ -9197,52 +9197,101 @@ const Controllers = (() => {
   function bindForms() {
     $('#incomeForm')?.addEventListener('submit', (e) => {
       e.preventDefault();
+      const nameVal = $('#incName')?.value || '';
+      const amtVal = $('#incAmt')?.value || '';
+      console.log('[incomeForm] submit:', { name: nameVal, amt: amtVal, cat: selectedChips.income });
+      
       try {
-        Entries.addIncome({
-          name: $('#incName').value,
-          amt: $('#incAmt').value,
-          cat: selectedChips.income
-        });
-        $('#incName').value = ''; $('#incAmt').value = '';
+        // Validate first
+        const name = (nameVal || '').trim();
+        const amt = parseFloat(amtVal);
+        
+        if (!name) {
+          Toast.show('اكتب اسم المصدر', 'warn');
+          $('#incName')?.focus();
+          return;
+        }
+        if (!amt || amt <= 0 || !isFinite(amt)) {
+          Toast.show('أدخل مبلغ صحيح', 'warn');
+          $('#incAmt')?.focus();
+          return;
+        }
+        
+        Entries.addIncome({ name, amt, cat: selectedChips.income });
+        $('#incName').value = '';
+        $('#incAmt').value = '';
         $('#incomeForm').classList.remove('open');
         R.scheduledAll();
-        Toast.show('أُضيف الدخل ✅');
+        Toast.show('أُضيف الدخل ✅', 'success');
       } catch (err) {
-        Toast.show('بيانات غير صحيحة', 'danger');
+        console.error('[incomeForm] error:', err);
+        Toast.show('خطأ: ' + (err.message || 'بيانات غير صحيحة'), 'danger');
       }
     });
 
     $('#fixedForm')?.addEventListener('submit', (e) => {
       e.preventDefault();
+      const nameVal = $('#fixName')?.value || '';
+      const amtVal = $('#fixAmt')?.value || '';
+      console.log('[fixedForm] submit:', { name: nameVal, amt: amtVal, cat: selectedChips.fixed });
+      
       try {
-        Entries.addFixed({
-          name: $('#fixName').value,
-          amt: $('#fixAmt').value,
-          cat: selectedChips.fixed
-        });
-        $('#fixName').value = ''; $('#fixAmt').value = '';
+        const name = (nameVal || '').trim();
+        const amt = parseFloat(amtVal);
+        
+        if (!name) {
+          Toast.show('اكتب اسم المصروف', 'warn');
+          $('#fixName')?.focus();
+          return;
+        }
+        if (!amt || amt <= 0 || !isFinite(amt)) {
+          Toast.show('أدخل مبلغ صحيح', 'warn');
+          $('#fixAmt')?.focus();
+          return;
+        }
+        
+        Entries.addFixed({ name, amt, cat: selectedChips.fixed });
+        $('#fixName').value = '';
+        $('#fixAmt').value = '';
         $('#fixedForm').classList.remove('open');
         R.scheduledAll();
-        Toast.show('أُضيف المصروف الثابت ✅');
+        Toast.show('أُضيف المصروف الثابت ✅', 'success');
       } catch (err) {
-        Toast.show('بيانات غير صحيحة', 'danger');
+        console.error('[fixedForm] error:', err);
+        Toast.show('خطأ: ' + (err.message || 'بيانات غير صحيحة'), 'danger');
       }
     });
 
     $('#varForm')?.addEventListener('submit', (e) => {
       e.preventDefault();
+      const nameVal = $('#varName')?.value || '';
+      const amtVal = $('#varAmt')?.value || '';
+      console.log('[varForm] submit:', { name: nameVal, amt: amtVal, cat: selectedChips.variable });
+      
       try {
-        Entries.addVariable({
-          name: $('#varName').value,
-          amt: $('#varAmt').value,
-          cat: selectedChips.variable
-        });
-        $('#varName').value = ''; $('#varAmt').value = '';
+        const name = (nameVal || '').trim();
+        const amt = parseFloat(amtVal);
+        
+        if (!name) {
+          Toast.show('اكتب ما اشتريت', 'warn');
+          $('#varName')?.focus();
+          return;
+        }
+        if (!amt || amt <= 0 || !isFinite(amt)) {
+          Toast.show('أدخل مبلغ صحيح', 'warn');
+          $('#varAmt')?.focus();
+          return;
+        }
+        
+        Entries.addVariable({ name, amt, cat: selectedChips.variable });
+        $('#varName').value = '';
+        $('#varAmt').value = '';
         $('#varForm').classList.remove('open');
         R.scheduledAll();
-        Toast.show('أُضيف ✅');
+        Toast.show('أُضيف ✅', 'success');
       } catch (err) {
-        Toast.show('بيانات غير صحيحة', 'danger');
+        console.error('[varForm] error:', err);
+        Toast.show('خطأ: ' + (err.message || 'بيانات غير صحيحة'), 'danger');
       }
     });
 
