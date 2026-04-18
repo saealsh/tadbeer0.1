@@ -3705,10 +3705,24 @@ body::before {
 .chat-send{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#0a0600;font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px var(--accent-glow);transition:all var(--t-fast);flex-shrink:0;border:none;cursor:pointer;padding:0}
 .chat-send:disabled{background:var(--bg4);color:var(--text3);box-shadow:none;opacity:.6}
 .chat-send:not(:disabled):active{transform:scale(.92)}
-.conv-card{display:flex;align-items:center;gap:var(--s-3);padding:var(--s-3);background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:6px;transition:all var(--t-fast);cursor:pointer}
-.conv-card:hover{border-color:var(--accent-bd);background:var(--bg4)}
-.conv-card.unread{border-color:var(--accent-bd);background:var(--accent-dim)}
-.conv-avatar{width:44px;height:44px;border-radius:50%;background:var(--bg5);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:var(--accent-2);flex-shrink:0}
+.conv-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:linear-gradient(145deg, var(--bg3), var(--bg2));border:1px solid var(--border);border-radius:16px;margin-bottom:8px;transition:all var(--t-med);cursor:pointer;position:relative;overflow:hidden;animation:convCardIn .4s var(--ease) both}
+.conv-card:nth-child(1){animation-delay:.05s}
+.conv-card:nth-child(2){animation-delay:.1s}
+.conv-card:nth-child(3){animation-delay:.15s}
+.conv-card:nth-child(4){animation-delay:.2s}
+.conv-card:nth-child(5){animation-delay:.25s}
+.conv-card:nth-child(6){animation-delay:.3s}
+@keyframes convCardIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.conv-card::before{content:'';position:absolute;top:0;right:0;width:3px;height:100%;background:linear-gradient(to bottom, var(--accent), var(--accent-2));transform:scaleY(0);transform-origin:top;transition:transform var(--t-med)}
+.conv-card:hover{border-color:var(--accent-bd);transform:translateX(-2px);box-shadow:0 6px 20px rgba(0,0,0,.3)}
+.conv-card:hover::before{transform:scaleY(1)}
+.conv-card.unread{background:linear-gradient(145deg, var(--accent-dim), var(--bg3));border-color:var(--accent-bd);box-shadow:0 0 20px var(--accent-glow)}
+.conv-card.unread::before{transform:scaleY(1);background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.conv-card.unread::after{content:'';position:absolute;top:50%;right:10px;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:unreadPulse 2s ease-in-out infinite}
+@keyframes unreadPulse { 0%, 100% { opacity: 1; transform: translateY(-50%) scale(1); } 50% { opacity: .5; transform: translateY(-50%) scale(1.3); } }
+.conv-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg, var(--bg4), var(--bg5));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:var(--accent-2);flex-shrink:0;position:relative;border:2px solid transparent;transition:all var(--t-med)}
+.conv-card.unread .conv-avatar{border-color:var(--accent);box-shadow:0 0 12px var(--accent-glow)}
+.conv-card:hover .conv-avatar{transform:scale(1.05)}
 .conv-body{flex:1;min-width:0}
 .conv-top-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:3px}
 .conv-name{font-size:14px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
@@ -3835,10 +3849,24 @@ body::before {
 .chat-send:not(:disabled):active{transform:scale(.92)}
 
 /* ─── CONVERSATIONS LIST ─── */
-.conv-card{display:flex;align-items:center;gap:var(--s-3);padding:var(--s-3);background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:6px;transition:all var(--t-fast);cursor:pointer}
-.conv-card:hover{border-color:var(--accent-bd);background:var(--bg4)}
-.conv-card.unread{border-color:var(--accent-bd);background:var(--accent-dim)}
-.conv-avatar{width:44px;height:44px;border-radius:50%;background:var(--bg5);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:var(--accent-2);flex-shrink:0}
+.conv-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:linear-gradient(145deg, var(--bg3), var(--bg2));border:1px solid var(--border);border-radius:16px;margin-bottom:8px;transition:all var(--t-med);cursor:pointer;position:relative;overflow:hidden;animation:convCardIn .4s var(--ease) both}
+.conv-card:nth-child(1){animation-delay:.05s}
+.conv-card:nth-child(2){animation-delay:.1s}
+.conv-card:nth-child(3){animation-delay:.15s}
+.conv-card:nth-child(4){animation-delay:.2s}
+.conv-card:nth-child(5){animation-delay:.25s}
+.conv-card:nth-child(6){animation-delay:.3s}
+@keyframes convCardIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.conv-card::before{content:'';position:absolute;top:0;right:0;width:3px;height:100%;background:linear-gradient(to bottom, var(--accent), var(--accent-2));transform:scaleY(0);transform-origin:top;transition:transform var(--t-med)}
+.conv-card:hover{border-color:var(--accent-bd);transform:translateX(-2px);box-shadow:0 6px 20px rgba(0,0,0,.3)}
+.conv-card:hover::before{transform:scaleY(1)}
+.conv-card.unread{background:linear-gradient(145deg, var(--accent-dim), var(--bg3));border-color:var(--accent-bd);box-shadow:0 0 20px var(--accent-glow)}
+.conv-card.unread::before{transform:scaleY(1);background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.conv-card.unread::after{content:'';position:absolute;top:50%;right:10px;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:unreadPulse 2s ease-in-out infinite}
+@keyframes unreadPulse { 0%, 100% { opacity: 1; transform: translateY(-50%) scale(1); } 50% { opacity: .5; transform: translateY(-50%) scale(1.3); } }
+.conv-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg, var(--bg4), var(--bg5));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:var(--accent-2);flex-shrink:0;position:relative;border:2px solid transparent;transition:all var(--t-med)}
+.conv-card.unread .conv-avatar{border-color:var(--accent);box-shadow:0 0 12px var(--accent-glow)}
+.conv-card:hover .conv-avatar{transform:scale(1.05)}
 .conv-body{flex:1;min-width:0}
 .conv-top-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:3px}
 .conv-name{font-size:14px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
@@ -5696,6 +5724,211 @@ body::before {
   object-fit:cover;
 }
 
+/* ═══ CHAT BUBBLES ANIMATION ═══ */
+.msg{animation:msgIn .3s var(--ease) both}
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(8px) scale(.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.msg.mine{animation-name:msgInMine}
+@keyframes msgInMine {
+  from { opacity: 0; transform: translateX(15px) scale(.95); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+.msg.theirs{animation-name:msgInTheirs}
+@keyframes msgInTheirs {
+  from { opacity: 0; transform: translateX(-15px) scale(.95); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* ═══ TAB UNREAD BADGE ═══ */
+.tab-unread-badge{
+  position:absolute;
+  top:4px;
+  left:calc(50% + 8px);
+  min-width:18px;
+  height:18px;
+  padding:0 5px;
+  border-radius:9px;
+  background:linear-gradient(135deg, #ef4444, #f59e0b);
+  color:#fff;
+  font-size:10px;
+  font-weight:900;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 2px 8px rgba(239,68,68,.5);
+  direction:ltr;
+  z-index:2;
+  animation:badgeAppear .4s var(--ease);
+  font-variant-numeric:tabular-nums;
+}
+@keyframes badgeAppear {
+  from { transform: scale(0) rotate(-180deg); opacity: 0; }
+  to { transform: scale(1) rotate(0); opacity: 1; }
+}
+.tab-unread-badge.pulse{
+  animation:badgePulseNow .6s var(--ease);
+}
+@keyframes badgePulseNow {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); box-shadow: 0 2px 16px rgba(239,68,68,.9); }
+  100% { transform: scale(1); }
+}
+
+/* ═══ CHAT NOTIFICATION TOAST ═══ */
+.chat-toast{
+  position:fixed;
+  top:calc(20px + env(safe-area-inset-top, 0px));
+  left:50%;
+  transform:translate(-50%, -140%);
+  z-index:200000;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 14px;
+  background:linear-gradient(145deg, var(--bg2), var(--bg3));
+  border:1px solid var(--accent-bd);
+  border-radius:16px;
+  box-shadow:0 12px 40px rgba(0,0,0,.6), 0 0 24px var(--accent-glow);
+  min-width:280px;
+  max-width:400px;
+  width:calc(100% - 32px);
+  cursor:pointer;
+  transition:transform .4s cubic-bezier(.34, 1.56, .64, 1);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+.chat-toast.show{
+  transform:translate(-50%, 0);
+}
+.chat-toast::before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:2px;
+  border-radius:16px 16px 0 0;
+  background:linear-gradient(90deg, transparent, var(--accent), var(--accent-2), var(--accent), transparent);
+  animation:toastShine 2s ease-in-out infinite;
+  background-size:200% 100%;
+}
+@keyframes toastShine {
+  0%, 100% { background-position: 0% 0; }
+  50% { background-position: 100% 0; }
+}
+.chat-toast-avatar{
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  background:linear-gradient(135deg, var(--accent), var(--accent-2));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  font-weight:900;
+  color:#0a0600;
+  flex-shrink:0;
+  box-shadow:0 4px 14px var(--accent-glow);
+  overflow:hidden;
+}
+.chat-toast-avatar img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border-radius:50%;
+}
+.chat-toast-body{
+  flex:1;
+  min-width:0;
+  overflow:hidden;
+}
+.chat-toast-name{
+  font-size:13px;
+  font-weight:800;
+  color:var(--accent-2);
+  margin-bottom:2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  letter-spacing:-.2px;
+}
+.chat-toast-text{
+  font-size:12px;
+  color:var(--text2);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  line-height:1.4;
+}
+.chat-toast-close{
+  background:transparent;
+  border:none;
+  color:var(--text3);
+  font-size:14px;
+  cursor:pointer;
+  padding:4px 8px;
+  border-radius:6px;
+  transition:all var(--t-fast);
+  flex-shrink:0;
+}
+.chat-toast-close:hover{
+  background:var(--bg4);
+  color:var(--text);
+}
+
+/* Mobile toast adjust */
+@media (max-width:480px) {
+  .chat-toast{
+    top:calc(12px + env(safe-area-inset-top, 0px));
+    width:calc(100% - 20px);
+  }
+}
+
+/* Notification settings toggles */
+.notif-setting{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 0;
+  border-bottom:1px solid var(--border);
+}
+.notif-setting:last-child{border-bottom:none}
+.notif-setting-info{flex:1;min-width:0}
+.notif-setting-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px}
+.notif-setting-desc{font-size:11px;color:var(--text3);line-height:1.4}
+.notif-toggle{
+  position:relative;
+  width:44px;
+  height:24px;
+  border-radius:12px;
+  background:var(--bg4);
+  border:1px solid var(--border);
+  cursor:pointer;
+  transition:all var(--t-fast);
+  flex-shrink:0;
+}
+.notif-toggle::before{
+  content:'';
+  position:absolute;
+  top:2px;
+  right:2px;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:var(--text3);
+  transition:all var(--t-fast);
+}
+.notif-toggle.on{
+  background:linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-color:var(--accent);
+}
+.notif-toggle.on::before{
+  right:22px;
+  background:#0a0600;
+}
+
 </style>
 </head>
 <body>
@@ -6621,6 +6854,38 @@ body::before {
 
         <!-- ═══ SETTINGS TAB ═══ -->
         <div class="tab-content" id="tab-settings" style="display:none">
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">🔔 إعدادات الإشعارات</div>
+              <div class="card-sub">اختر كيف تصلك التنبيهات عند وصول رسالة</div>
+            </div>
+            <div id="notifSettingsBody">
+              <div class="notif-setting">
+                <div class="notif-setting-info">
+                  <div class="notif-setting-title">🔔 إشعار منبثق (Toast)</div>
+                  <div class="notif-setting-desc">شعار جميل يظهر أعلى الشاشة</div>
+                </div>
+                <div class="notif-toggle on" data-notif="toast" id="notifToggleToast"></div>
+              </div>
+              <div class="notif-setting">
+                <div class="notif-setting-info">
+                  <div class="notif-setting-title">🎧 صوت تنبيه</div>
+                  <div class="notif-setting-desc">صوت لطيف عند وصول رسالة</div>
+                </div>
+                <div class="notif-toggle on" data-notif="sound" id="notifToggleSound"></div>
+              </div>
+              <div class="notif-setting">
+                <div class="notif-setting-info">
+                  <div class="notif-setting-title">🎯 شارة على التبويب</div>
+                  <div class="notif-setting-desc">رقم الرسائل غير المقروءة</div>
+                </div>
+                <div class="notif-toggle on" data-notif="badge" id="notifToggleBadge"></div>
+              </div>
+            </div>
+            <button class="btn-primary" id="testNotifBtn" style="width:100%;margin-top:14px">
+              🎵 اختبار الإشعارات
+            </button>
+          </div>
           <div class="card">
             <div class="card-head">
               <div class="card-title">🎨 صورة العرض</div>
@@ -9776,6 +10041,50 @@ const Controllers = (() => {
     $('#changeProfilePicBtn')?.addEventListener('click', () => {
       if (window.ImageHandler) window.ImageHandler.openProfilePicker();
     });
+    
+    // Notification settings toggles
+    document.querySelectorAll('[data-notif]').forEach(toggle => {
+      const key = toggle.dataset.notif;
+      // Load current state
+      try {
+        const settings = window.ChatNotifications?.getSettings() || {};
+        toggle.classList.toggle('on', settings[key] !== false);
+      } catch {}
+      
+      toggle.addEventListener('click', () => {
+        if (!window.ChatNotifications) return;
+        const newState = window.ChatNotifications.toggleSetting(key);
+        toggle.classList.toggle('on', newState);
+        
+        // Play sound if enabled sound
+        if (key === 'sound' && newState) {
+          window.ChatNotifications.playMessageSound();
+        }
+      });
+    });
+    
+    // Test notifications button
+    $('#testNotifBtn')?.addEventListener('click', () => {
+      if (!window.ChatNotifications) return;
+      
+      // Test toast
+      window.ChatNotifications.showChatToast({
+        peerName: 'تـدّبير',
+        peerUsername: 'tadbeer',
+        text: 'هذا اختبار للإشعارات 🎉',
+        photoData: null
+      });
+      
+      // Test sound
+      window.ChatNotifications.playMessageSound();
+      
+      // Test badge
+      window.ChatNotifications.updateBadge(5);
+      setTimeout(() => window.ChatNotifications.updateBadge(0), 3000);
+      
+      // Test vibration
+      try { if (navigator.vibrate) navigator.vibrate([50, 30, 50]); } catch {}
+    });
     bindData();
 
     // Escape closes overlays
@@ -10079,16 +10388,45 @@ const Social = (() => {
       );
       return window.FB.onSnapshot(ref, (snap) => {
         const prevUnreadTotal = state.conversations.reduce((s, c) => s + (c.unread || 0), 0);
+        const prevConvsMap = new Map(state.conversations.map(c => [c.peerUid, c]));
         state.conversations = [];
         snap.forEach(doc => state.conversations.push({ id: doc.id, ...doc.data() }));
         const newUnreadTotal = state.conversations.reduce((s, c) => s + (c.unread || 0), 0);
+        
+        // Update tab badge
+        if (window.ChatNotifications) {
+          window.ChatNotifications.updateBadge(newUnreadTotal);
+        }
+        
+        // Detect new messages (unread count increased OR new conversation)
         if (newUnreadTotal > prevUnreadTotal && state.profile) {
-          const latestUnread = state.conversations.find(c => c.unread > 0);
-          if (latestUnread && (!state.activeChat || state.activeChat.peerUid !== latestUnread.peerUid)) {
-            Toast.show(`💬 رسالة من ${latestUnread.peerName || '@' + latestUnread.peerUsername}`, 'warn', 3500);
-            try { if (navigator.vibrate) navigator.vibrate(60); } catch {}
+          // Find which conversation got the new message
+          const newMsgConv = state.conversations.find(c => {
+            const prev = prevConvsMap.get(c.peerUid);
+            return (c.unread || 0) > (prev?.unread || 0);
+          });
+          
+          if (newMsgConv && (!state.activeChat || state.activeChat.peerUid !== newMsgConv.peerUid)) {
+            // Get peer photo from friend list
+            const friend = state.friends.find(f => f.uid === newMsgConv.peerUid);
+            const photoData = friend?.photoData || null;
+            
+            // Trigger rich notification
+            if (window.ChatNotifications) {
+              window.ChatNotifications.notifyNewMessage({
+                peerUid: newMsgConv.peerUid,
+                peerName: newMsgConv.peerName,
+                peerUsername: newMsgConv.peerUsername,
+                text: newMsgConv.lastMessage,
+                photoData
+              });
+            }
+            
+            // Vibration
+            try { if (navigator.vibrate) navigator.vibrate([50, 30, 50]); } catch {}
           }
         }
+        
         renderFriendsTab();
       }, errCb);
     });
@@ -10247,6 +10585,11 @@ const Social = (() => {
       } catch (e) { Logger.error('Social.updatePeerConv', e); }
 
       try { if (navigator.vibrate) navigator.vibrate(20); } catch {}
+      
+      // Play sent sound
+      try { 
+        if (window.ChatNotifications) window.ChatNotifications.playSentSound(); 
+      } catch {}
     } catch (e) {
       Logger.error('Social.sendMsg', e);
       Toast.show('فشل الإرسال', 'danger');
@@ -13559,6 +13902,302 @@ const ImageHandler = (() => {
 
 window.ImageHandler = ImageHandler;
 
+/* ═══════════════════════════════════════════════════
+   TDBEER — Chat Notifications (Toast + Browser + Sound + Badge)
+═══════════════════════════════════════════════════ */
+
+const ChatNotifications = (() => {
+  const { DOM, $, Logger } = Tdbeer;
+
+  const state = {
+    audioCtx: null,
+    settings: {
+      sound: true,
+      toast: true,
+      badge: true
+    },
+    lastNotificationTime: 0
+  };
+
+  // ═══ SOUND GENERATOR (beautiful notification tone) ═══
+  function createAudioContext() {
+    if (state.audioCtx) return state.audioCtx;
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return null;
+      state.audioCtx = new AudioCtx();
+      return state.audioCtx;
+    } catch (e) {
+      console.warn('[Notifications] AudioContext not supported');
+      return null;
+    }
+  }
+
+  function playMessageSound() {
+    if (!state.settings.sound) return;
+    
+    try {
+      const ctx = createAudioContext();
+      if (!ctx) return;
+      
+      // Resume if suspended (Safari iOS)
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+      
+      const now = ctx.currentTime;
+      
+      // Beautiful two-tone notification (like iMessage)
+      const createTone = (freq, startTime, duration, volume = 0.15) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, startTime);
+        
+        // Smooth envelope
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(volume, startTime + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      };
+      
+      // Two-tone: E5 then A5 (pleasant ascending)
+      createTone(659.25, now, 0.15); // E5
+      createTone(880, now + 0.12, 0.2); // A5
+      
+    } catch (e) {
+      console.warn('[Notifications] Sound error:', e.message);
+    }
+  }
+
+  function playSentSound() {
+    if (!state.settings.sound) return;
+    try {
+      const ctx = createAudioContext();
+      if (!ctx) return;
+      if (ctx.state === 'suspended') ctx.resume();
+      
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, now);
+      osc.frequency.exponentialRampToValueAtTime(1200, now + 0.15);
+      
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.08, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.15);
+    } catch (e) {}
+  }
+
+  // ═══ CHAT TOAST (beautiful, action-able) ═══
+  function showChatToast({ peerName, peerUsername, text, photoData, onOpen }) {
+    if (!state.settings.toast) return;
+    
+    // Remove existing chat toast
+    const existing = document.getElementById('chatToast');
+    if (existing) existing.remove();
+    
+    const toast = document.createElement('div');
+    toast.id = 'chatToast';
+    toast.className = 'chat-toast';
+    
+    const displayName = peerName || '@' + (peerUsername || '');
+    const initial = (displayName || '?')[0].toUpperCase();
+    
+    toast.innerHTML = `
+      <div class="chat-toast-avatar">
+        ${photoData ? `<img src="${photoData}" alt="">` : initial}
+      </div>
+      <div class="chat-toast-body">
+        <div class="chat-toast-name">💬 ${escapeHtml(displayName)}</div>
+        <div class="chat-toast-text">${escapeHtml(text || 'رسالة جديدة')}</div>
+      </div>
+      <button class="chat-toast-close" aria-label="إغلاق">✕</button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Trigger animation
+    requestAnimationFrame(() => toast.classList.add('show'));
+    
+    // Close button
+    toast.querySelector('.chat-toast-close').addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeChatToast();
+    });
+    
+    // Click to open chat
+    toast.addEventListener('click', () => {
+      if (onOpen) onOpen();
+      closeChatToast();
+    });
+    
+    // Auto-close after 5 seconds
+    setTimeout(closeChatToast, 5000);
+  }
+
+  function closeChatToast() {
+    const toast = document.getElementById('chatToast');
+    if (!toast) return;
+    toast.classList.remove('show');
+    setTimeout(() => { try { toast.remove(); } catch {} }, 300);
+  }
+
+  function escapeHtml(s) {
+    return String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // ═══ BADGE UPDATE ═══
+  function updateBadge(totalUnread) {
+    if (!state.settings.badge) return;
+    
+    // Tab badge (on social tab)
+    const socialTabs = document.querySelectorAll('[data-tab="social"]');
+    socialTabs.forEach(tab => {
+      let badge = tab.querySelector('.tab-unread-badge');
+      if (totalUnread > 0) {
+        if (!badge) {
+          badge = document.createElement('span');
+          badge.className = 'tab-unread-badge';
+          tab.appendChild(badge);
+        }
+        badge.textContent = totalUnread > 99 ? '99+' : String(totalUnread);
+        badge.classList.add('pulse');
+        setTimeout(() => badge.classList.remove('pulse'), 600);
+      } else if (badge) {
+        badge.remove();
+      }
+    });
+    
+    // Browser title badge
+    try {
+      if (totalUnread > 0) {
+        if (!document.title.startsWith('(')) {
+          document.title = `(${totalUnread > 99 ? '99+' : totalUnread}) ${document.title.replace(/^\(\d+\+?\)\s*/, '')}`;
+        } else {
+          document.title = document.title.replace(/^\(\d+\+?\)/, `(${totalUnread > 99 ? '99+' : totalUnread})`);
+        }
+      } else {
+        document.title = document.title.replace(/^\(\d+\+?\)\s*/, '');
+      }
+    } catch {}
+    
+    // Favicon badge (dot indicator) - subtle
+    try {
+      const favicons = document.querySelectorAll('link[rel="icon"]');
+      // Could draw a red dot on canvas if needed, skipping for simplicity
+    } catch {}
+  }
+
+  // ═══ MAIN NOTIFY FUNCTION ═══
+  function notifyNewMessage({ peerName, peerUsername, text, photoData, peerUid }) {
+    // Throttle: max 1 per 500ms
+    const now = Date.now();
+    if (now - state.lastNotificationTime < 500) return;
+    state.lastNotificationTime = now;
+    
+    // Check if chat is already open with this peer
+    const social = window.Social;
+    if (social?._state?.activeChat?.peerUid === peerUid) {
+      return; // Don't notify if already chatting
+    }
+    
+    // 1. Vibration
+    try { if (navigator.vibrate) navigator.vibrate([50, 30, 50]); } catch {}
+    
+    // 2. Sound
+    playMessageSound();
+    
+    // 3. Toast
+    showChatToast({
+      peerName, peerUsername, text, photoData,
+      onOpen: () => {
+        try {
+          // Switch to social tab
+          if (window.Controllers?.showTab) {
+            window.Controllers.showTab('social');
+          }
+          // Open chat
+          const friend = social?._state?.friends?.find(f => f.uid === peerUid) 
+            || { uid: peerUid, displayName: peerName, username: peerUsername };
+          if (social?.openChat) social.openChat(friend);
+        } catch (e) { console.warn('Open chat error:', e.message); }
+      }
+    });
+  }
+
+  // ═══ SETTINGS ═══
+  function loadSettings() {
+    try {
+      const saved = localStorage.getItem('chatNotifSettings');
+      if (saved) {
+        state.settings = { ...state.settings, ...JSON.parse(saved) };
+      }
+    } catch {}
+  }
+
+  function saveSettings() {
+    try {
+      localStorage.setItem('chatNotifSettings', JSON.stringify(state.settings));
+    } catch {}
+  }
+
+  function toggleSetting(key) {
+    state.settings[key] = !state.settings[key];
+    saveSettings();
+    return state.settings[key];
+  }
+
+  function getSettings() {
+    return { ...state.settings };
+  }
+
+  // ═══ INIT ═══
+  async function init() {
+    loadSettings();
+    
+    // Initialize audio context on first user interaction (required by browsers)
+    const initAudio = () => {
+      createAudioContext();
+      document.removeEventListener('click', initAudio);
+      document.removeEventListener('touchstart', initAudio);
+    };
+    document.addEventListener('click', initAudio, { once: true });
+    document.addEventListener('touchstart', initAudio, { once: true });
+  }
+
+  return {
+    init,
+    notifyNewMessage,
+    updateBadge,
+    playMessageSound,
+    playSentSound,
+    toggleSetting,
+    getSettings,
+    showChatToast,
+    closeChatToast
+  };
+})();
+
+window.ChatNotifications = ChatNotifications;
+
 
 (function bootstrap() {
   const { U, Storage, Logger } = Tdbeer;
@@ -13729,6 +14368,13 @@ window.ImageHandler = ImageHandler;
           ImageHandler.init();
         }
       } catch (e) { Logger.warn('Bootstrap.ImageHandler', e.message); }
+
+      // Chat Notifications init
+      try {
+        if (typeof ChatNotifications !== 'undefined' && ChatNotifications.init) {
+          ChatNotifications.init();
+        }
+      } catch (e) { Logger.warn('Bootstrap.ChatNotifications', e.message); }
 
       // Tests
       if (new URLSearchParams(location.search).has('test')) {
