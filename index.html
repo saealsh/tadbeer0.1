@@ -8961,8 +8961,13 @@ const Renderers = (() => {
 
   function all() {
     const tab = store.get('tab');
+    const subTab = store.get('subTab');
     greeting();
-    if (tab === 'monthly') {
+    
+    // Support both new structure (money + subTab) and legacy (monthly/yearly/zakat)
+    const effectiveTab = (tab === 'money') ? (subTab || 'monthly') : tab;
+    
+    if (effectiveTab === 'monthly' || tab === 'monthly') {
       bankCard();
       summary();
       pts();
@@ -8978,10 +8983,15 @@ const Renderers = (() => {
       achievements();
       periodChart();
       salary();
-    } else if (tab === 'yearly') {
+    } else if (effectiveTab === 'yearly' || tab === 'yearly') {
       yearly();
-    } else if (tab === 'zakat') {
+    } else if (effectiveTab === 'zakat' || tab === 'zakat') {
       nisab();
+    } else if (tab === 'home') {
+      // Home tab - no heavy rendering needed
+      pts();
+    } else if (tab === 'profile') {
+      achievements();
     }
     notifBell();
     notifPanel();
