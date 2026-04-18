@@ -6855,14 +6855,15 @@ body::before {
     </div>
 
     <div class="friends-sub-tabs" id="friendsSubTabs">
-      <button class="friends-sub-tab active" data-fsub="list">🏆<span class="sub-count" id="cntList">0</span></button>
-      <button class="friends-sub-tab" data-fsub="chats">💬<span class="sub-count" id="cntChats">0</span></button>
+      <button class="friends-sub-tab active" data-fsub="chats">💬 المحادثات<span class="sub-count" id="cntChats">0</span></button>
+      <button class="friends-sub-tab" data-fsub="list">👥 الأصدقاء<span class="sub-count" id="cntList">0</span></button>
       <button class="friends-sub-tab" data-fsub="requests">🔔<span class="sub-count" id="cntReq">0</span></button>
       <button class="friends-sub-tab" data-fsub="blocked">🚫<span class="sub-count" id="cntBlocked">0</span></button>
     </div>
 
-    <div class="fsub-panel" id="fsub-list">
-      <!-- Smart Tools Grid -->
+    <!-- CHATS PANEL (الأهم - في البداية) -->
+    <div class="fsub-panel" id="fsub-chats">
+      <!-- Smart Tools Grid في بداية المحادثات -->
       <div class="smart-tools-grid">
         <button class="smart-tool-btn" id="btnOpenGift" aria-label="صندوق اليوم">
           <div class="smart-tool-icon">🎁</div>
@@ -6878,6 +6879,17 @@ body::before {
         </button>
       </div>
       
+      <!-- Fresh Content Card -->
+      <div id="freshContentContainer"></div>
+      
+      <!-- Smart Moments Cards -->
+      <div id="smartMomentsContainer"></div>
+      
+      <div id="convsList"></div>
+    </div>
+
+    <!-- FRIENDS LIST PANEL -->
+    <div class="fsub-panel" id="fsub-list" style="display:none">
       <div class="card">
         <div class="card-head">
           <div class="card-title">➕ إضافة صديق</div>
@@ -6890,17 +6902,8 @@ body::before {
         </div>
         <div class="search-results" id="searchResults" style="display:none"></div>
       </div>
-      <!-- Fresh Content Card -->
-      <div id="freshContentContainer"></div>
-      
-      <!-- Smart Moments Cards -->
-      <div id="smartMomentsContainer"></div>
       
       <div id="friendsList"></div>
-    </div>
-
-    <div class="fsub-panel" id="fsub-chats" style="display:none">
-      <div id="convsList"></div>
     </div>
 
     <div class="fsub-panel" id="fsub-requests" style="display:none">
@@ -10255,7 +10258,7 @@ const Social = (() => {
     fbReady: false,
     subs: [],
     chatMsgUnsub: null,
-    currentSubTab: 'list'
+    currentSubTab: 'chats'
   };
 
   function chatIdOf(uid1, uid2) { return [uid1, uid2].sort().join('_'); }
@@ -11027,16 +11030,11 @@ const Social = (() => {
 
     fList.innerHTML = '';
     
-    // بطاقة البوت دائماً في الأعلى
-    if (window.Bot && window.Bot.renderBotCard) {
-      window.Bot.renderBotCard(fList);
-    }
-    
     if (board.length === 1) {
       fList.appendChild(DOM.h('div', { class: 'friends-empty' },
         DOM.h('div', { class: 'friends-empty-icon' }, '👥'),
         DOM.h('div', null, 'ما عندك أصدقاء بعد'),
-        DOM.h('div', { style: { fontSize: '11px', marginTop: '4px' } }, 'ابحث بالاسم أو اطلب الكود من صديقك، أو سولف مع البوت 🤖')
+        DOM.h('div', { style: { fontSize: '11px', marginTop: '4px' } }, 'ابحث بالاسم أو اطلب الكود من صديقك')
       ));
       return;
     }
@@ -11105,28 +11103,79 @@ const Social = (() => {
     const cont = $('#convsList');
     if (!cont) return;
     cont.innerHTML = '';
+    
+    // Header with chat count
+    if (state.conversations.length > 0) {
+      const totalUnread = state.conversations.reduce((s, c) => s + (c.unread || 0), 0);
+      cont.appendChild(DOM.h('div', {
+        style: {
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 4px 12px',
+          fontSize: '13px',
+          fontWeight: '700',
+          color: 'var(--text2)'
+        }
+      },
+        DOM.h('span', null, '💬 المحادثات'),
+        totalUnread > 0 ? DOM.h('span', {
+          style: {
+            background: 'linear-gradient(135deg, #ef4444, #f59e0b)',
+            color: '#fff',
+            padding: '3px 10px',
+            borderRadius: '12px',
+            fontSize: '11px',
+            fontWeight: '800',
+            boxShadow: '0 2px 8px rgba(239,68,68,.4)'
+          }
+        }, totalUnread + ' جديد') : null
+      ));
+    }
+    
+    // Bot card always at the top
+    if (window.Bot && window.Bot.renderBotCard) {
+      window.Bot.renderBotCard(cont);
+    }
+    
     if (!state.conversations.length) {
       cont.appendChild(DOM.h('div', { class: 'friends-empty' },
         DOM.h('div', { class: 'friends-empty-icon' }, '💬'),
-        DOM.h('div', null, 'ما عندك محادثات بعد'),
-        DOM.h('div', { style: { fontSize: '11px', marginTop: '4px' } },
-          'اختر صديقاً من قائمة الأصدقاء وابدأ المحادثة')
+        DOM.h('div', { style: { fontSize: '14px', fontWeight: '700', marginBottom: '4px' } }, 'ابدأ أول محادثة!'),
+        DOM.h('div', { style: { fontSize: '12px', marginTop: '4px' } },
+          'اذهب إلى تبويب "👥 الأصدقاء" وسولف مع أي صديق')
       ));
       return;
     }
+    
     for (const conv of state.conversations) {
       const initial = (conv.peerName || conv.peerUsername || '?')[0].toUpperCase();
       const hasUnread = (conv.unread || 0) > 0;
+      
+      // Get photoData from friends list
+      const friend = state.friends.find(f => f.uid === conv.peerUid);
+      const photoData = friend?.photoData || null;
+      
+      const avatarEl = DOM.h('div', { class: 'conv-avatar' + (photoData ? ' has-img' : '') });
+      if (photoData) {
+        const img = document.createElement('img');
+        img.src = photoData;
+        img.alt = '';
+        avatarEl.appendChild(img);
+      } else {
+        avatarEl.textContent = initial;
+      }
+      
       const card = DOM.h('div', {
         class: 'conv-card' + (hasUnread ? ' unread' : ''),
         onclick: () => {
-          const friend = state.friends.find(f => f.uid === conv.peerUid) || {
+          const friendObj = state.friends.find(f => f.uid === conv.peerUid) || {
             uid: conv.peerUid, displayName: conv.peerName, username: conv.peerUsername
           };
-          openChat(friend);
+          openChat(friendObj);
         }
       },
-        DOM.h('div', { class: 'conv-avatar' }, initial),
+        avatarEl,
         DOM.h('div', { class: 'conv-body' },
           DOM.h('div', { class: 'conv-top-row' },
             DOM.h('div', { class: 'conv-name' }, conv.peerName || '@' + conv.peerUsername),
