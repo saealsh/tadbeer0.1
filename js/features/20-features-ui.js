@@ -414,40 +414,94 @@ var FeaturesUI = (() => {
       overlay.className = 'voice-overlay';
       overlay.innerHTML = `
         <div class="voice-modal">
-          <div class="voice-icon">🎤</div>
-          <div class="voice-title">تكلّم الآن</div>
-          <div class="voice-hint">مثلاً: "صرفت ٤٠ ريال على القهوة"</div>
-          <button class="voice-cancel">إلغاء</button>
+          <button class="voice-close" aria-label="إغلاق">✕</button>
+          <div class="voice-title-row">
+            <span class="voice-mic-emoji">🎙️</span>
+            <span class="voice-h1">سجّل بصوتك</span>
+          </div>
+          <div class="voice-sub">قل مصروفك بلغتك الطبيعية</div>
+          <button class="voice-mic-btn" aria-label="ابدأ التسجيل">
+            <span class="voice-mic-icon">🎤</span>
+          </button>
+          <div class="voice-status">اضغط على الميكروفون للبدء</div>
+          <div class="voice-examples">
+            <div class="voice-examples-title">💡 جرّب مثلاً:</div>
+            <ul>
+              <li>"صرفت 50 ريال على القهوة"</li>
+              <li>"أخذت راتبي 8000 ريال"</li>
+              <li>"دفعت 200 للبنزين"</li>
+              <li>"عطيت هدية 100 ريال"</li>
+            </ul>
+          </div>
         </div>
       `;
       document.body.appendChild(overlay);
       
-      overlay.querySelector('.voice-cancel').onclick = () => {
-        recognition.abort();
-        overlay.remove();
+      let isListening = false;
+      const micBtn = overlay.querySelector('.voice-mic-btn');
+      const status = overlay.querySelector('.voice-status');
+      
+      function close() {
+        try { recognition.abort(); } catch {}
+        if (overlay.parentNode) overlay.remove();
+      }
+      
+      // ─── X button (top-left in RTL, top-right visually) ───
+      overlay.querySelector('.voice-close').onclick = close;
+      
+      // ─── Click outside to close ───
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) close();
+      });
+      
+      // ─── Escape key to close ───
+      const escHandler = (e) => {
+        if (e.key === 'Escape') {
+          close();
+          document.removeEventListener('keydown', escHandler);
+        }
+      };
+      document.addEventListener('keydown', escHandler);
+      
+      // ─── Mic button click → start recognition ───
+      micBtn.onclick = () => {
+        if (isListening) {
+          try { recognition.abort(); } catch {}
+          return;
+        }
+        try {
+          recognition.start();
+          isListening = true;
+          micBtn.classList.add('listening');
+          status.textContent = '🎙️ تكلّم الآن...';
+        } catch (e) {
+          window.Toast?.show?.('لا يمكن بدء التسجيل', 'warn');
+        }
       };
       
       recognition.onresult = (event) => {
         const text = event.results[0][0].transcript;
-        overlay.remove();
+        close();
+        document.removeEventListener('keydown', escHandler);
         parseAndSave(text);
       };
       
       recognition.onerror = (event) => {
-        overlay.remove();
-        window.Toast?.show?.('فشل الإدخال الصوتي: ' + event.error, 'warn');
+        isListening = false;
+        micBtn.classList.remove('listening');
+        if (event.error === 'no-speech') {
+          status.textContent = 'لم أسمع شيئاً، حاول مرة أخرى';
+        } else if (event.error === 'not-allowed') {
+          status.textContent = '⚠️ السماح بالميكروفون مرفوض';
+        } else {
+          status.textContent = 'فشل التسجيل: ' + event.error;
+        }
       };
       
       recognition.onend = () => {
-        if (document.body.contains(overlay)) overlay.remove();
+        isListening = false;
+        micBtn.classList.remove('listening');
       };
-      
-      try {
-        recognition.start();
-      } catch (e) {
-        overlay.remove();
-        window.Toast?.show?.('لا يمكن بدء التسجيل', 'warn');
-      }
     }
     
     /**
