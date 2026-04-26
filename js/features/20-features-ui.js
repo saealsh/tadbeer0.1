@@ -391,163 +391,19 @@ var FeaturesUI = (() => {
   }
   
   /* ───────────────────────────────────────────
-     VOICE INPUT (Web Speech API)
+     VOICE INPUT — يستخدم Voice الموجود في smart-features
   ─────────────────────────────────────────── */
-  const VoiceInput = (() => {
-    function isSupported() {
-      return 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+  function openVoice() {
+    // Voice module الأصلي موجود في 03-smart-features.js
+    // يفتح عبر الزر btnOpenVoice في HTML
+    const voiceBtn = document.getElementById('btnOpenVoice');
+    if (voiceBtn) {
+      voiceBtn.click();
+    } else {
+      window.Toast?.show?.('ميزة الإدخال الصوتي غير متاحة', 'warn');
     }
-    
-    function start() {
-      if (!isSupported()) {
-        window.Toast?.show?.('المتصفح لا يدعم الإدخال الصوتي', 'warn');
-        return;
-      }
-      
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'ar-SA';
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      
-      const overlay = document.createElement('div');
-      overlay.className = 'voice-overlay';
-      overlay.innerHTML = `
-        <div class="voice-modal">
-          <button class="voice-close" aria-label="إغلاق">✕</button>
-          <div class="voice-title-row">
-            <span class="voice-mic-emoji">🎙️</span>
-            <span class="voice-h1">سجّل بصوتك</span>
-          </div>
-          <div class="voice-sub">قل مصروفك بلغتك الطبيعية</div>
-          <button class="voice-mic-btn" aria-label="ابدأ التسجيل">
-            <span class="voice-mic-icon">🎤</span>
-          </button>
-          <div class="voice-status">اضغط على الميكروفون للبدء</div>
-          <div class="voice-examples">
-            <div class="voice-examples-title">💡 جرّب مثلاً:</div>
-            <ul>
-              <li>"صرفت 50 ريال على القهوة"</li>
-              <li>"أخذت راتبي 8000 ريال"</li>
-              <li>"دفعت 200 للبنزين"</li>
-              <li>"عطيت هدية 100 ريال"</li>
-            </ul>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(overlay);
-      
-      let isListening = false;
-      const micBtn = overlay.querySelector('.voice-mic-btn');
-      const status = overlay.querySelector('.voice-status');
-      
-      function close() {
-        try { recognition.abort(); } catch {}
-        if (overlay.parentNode) overlay.remove();
-      }
-      
-      // ─── X button (top-left in RTL, top-right visually) ───
-      overlay.querySelector('.voice-close').onclick = close;
-      
-      // ─── Click outside to close ───
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) close();
-      });
-      
-      // ─── Escape key to close ───
-      const escHandler = (e) => {
-        if (e.key === 'Escape') {
-          close();
-          document.removeEventListener('keydown', escHandler);
-        }
-      };
-      document.addEventListener('keydown', escHandler);
-      
-      // ─── Mic button click → start recognition ───
-      micBtn.onclick = () => {
-        if (isListening) {
-          try { recognition.abort(); } catch {}
-          return;
-        }
-        try {
-          recognition.start();
-          isListening = true;
-          micBtn.classList.add('listening');
-          status.textContent = '🎙️ تكلّم الآن...';
-        } catch (e) {
-          window.Toast?.show?.('لا يمكن بدء التسجيل', 'warn');
-        }
-      };
-      
-      recognition.onresult = (event) => {
-        const text = event.results[0][0].transcript;
-        close();
-        document.removeEventListener('keydown', escHandler);
-        parseAndSave(text);
-      };
-      
-      recognition.onerror = (event) => {
-        isListening = false;
-        micBtn.classList.remove('listening');
-        if (event.error === 'no-speech') {
-          status.textContent = 'لم أسمع شيئاً، حاول مرة أخرى';
-        } else if (event.error === 'not-allowed') {
-          status.textContent = '⚠️ السماح بالميكروفون مرفوض';
-        } else {
-          status.textContent = 'فشل التسجيل: ' + event.error;
-        }
-      };
-      
-      recognition.onend = () => {
-        isListening = false;
-        micBtn.classList.remove('listening');
-      };
-    }
-    
-    /**
-     * يحلّل النص ويستخرج المبلغ والاسم
-     */
-    function parseAndSave(text) {
-      // استخرج الرقم
-      const arabicNums = { '٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9' };
-      let normalized = text;
-      for (const [ar, en] of Object.entries(arabicNums)) {
-        normalized = normalized.replace(new RegExp(ar, 'g'), en);
-      }
-      
-      const numMatch = normalized.match(/\d+(?:[.,]\d+)?/);
-      const amount = numMatch ? parseFloat(numMatch[0].replace(',', '.')) : null;
-      
-      if (!amount) {
-        window.Toast?.show?.('لم أفهم المبلغ، حاول مرة أخرى', 'warn');
-        return;
-      }
-      
-      // استخرج اسم البند (أزل كلمات شائعة)
-      const stopWords = ['صرفت','دفعت','اشتريت','على','من','بـ','ريال','﷼','الريال','sar'];
-      const words = text.split(/\s+/).filter(w => 
-        !stopWords.includes(w.toLowerCase()) && 
-        !/\d/.test(w) && 
-        w.length > 1
-      );
-      const name = words.join(' ').trim() || 'مصروف صوتي';
-      
-      // اقترح فئة
-      const cat = window.SmartCategorizer?.suggest(name) || '➕';
-      
-      // احفظ
-      try {
-        window.App.Entries.addVariable({ name, amt: amount, cat });
-        window.Toast?.show?.(`✅ +${amount} ﷼ ${cat} ${name}`, 'success');
-        window.SmartCategorizer?.learn(name, cat);
-        window.Renderers?.scheduledAll?.();
-      } catch (e) {
-        window.Toast?.show?.('فشل الحفظ', 'danger');
-      }
-    }
-    
-    return { start, isSupported };
-  })();
+  }
+  
   
   /* ───────────────────────────────────────────
      SETUP BUTTONS — يربط الأزرار في HTML
@@ -580,8 +436,8 @@ var FeaturesUI = (() => {
     
     // زر Voice Input
     document.querySelectorAll('[data-feature="voice"]').forEach(btn => {
-      btn.addEventListener('click', () => VoiceInput.start());
-      if (!VoiceInput.isSupported()) btn.style.display = 'none';
+      btn.addEventListener('click', openVoice);
+      // الميزة الأصلية تتعامل مع isSupported
     });
     
     // زر Backup
@@ -635,7 +491,7 @@ var FeaturesUI = (() => {
     openZakat,
     openLoan,
     openChallenges,
-    VoiceInput,
+    openVoice,
     setupButtons
   };
 })();
@@ -643,4 +499,4 @@ var FeaturesUI = (() => {
 window.Tdbeer = window.Tdbeer || {};
 window.Tdbeer.FeaturesUI = FeaturesUI;
 window.FeaturesUI = FeaturesUI;
-window.VoiceInput = FeaturesUI.VoiceInput;
+// VoiceInput يُحمَّل من smart-features
