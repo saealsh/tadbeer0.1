@@ -13,7 +13,7 @@
      • Push notifications + background sync
 ═══════════════════════════════════════════════════════════════════ */
 
-const CACHE_VERSION = '3.4.0';
+const CACHE_VERSION = '3.5.0';
 const BUILD_TIME = '2026-04-26';
 const CACHE_NAME = `tdbeer-v${CACHE_VERSION}`;
 const FONTS_CACHE = `${CACHE_NAME}-fonts`;
