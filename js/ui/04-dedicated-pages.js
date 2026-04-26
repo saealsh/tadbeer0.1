@@ -235,7 +235,11 @@ var DedicatedPages = (() => {
       { id: 'midnight', name: 'Midnight', desc: 'داكن أسود مع لمسات خضراء', colors: ['#05070a', '#01dd8c'] },
       { id: 'default', name: 'Classic', desc: 'الشكل الكلاسيكي مع الذهبي', colors: ['#0a0a0a', '#c9a84c'] },
       { id: 'light', name: 'Light', desc: 'فاتح ومريح للقراءة في النهار', colors: ['#fdf8f3', '#c9a84c'] },
-      { id: 'rose', name: 'Rose', desc: 'وردي أنيق ومميز', colors: ['#1a0d14', '#ff6fa5'] }
+      { id: 'rose', name: 'Rose', desc: 'وردي أنيق ومميز', colors: ['#1a0d14', '#ff6fa5'] },
+      { id: 'tropical', name: 'Tropical', desc: 'استوائي منعش بالأخضر الفيروزي', colors: ['#052e2b', '#06b6d4'] },
+      { id: 'sunset', name: 'Sunset', desc: 'ألوان غروب الشمس الدافئة', colors: ['#1a0f1a', '#f97316'] },
+      { id: 'oled', name: 'OLED', desc: 'أسود نقي - يوفّر بطارية الجوال', colors: ['#000000', '#10b981'] },
+      { id: 'custom', name: 'Custom', desc: 'اختر لون accent يعجبك', colors: ['#1a1a1a', '#c9a84c'] }
     ];
 
     const section = document.createElement('div');
@@ -270,6 +274,14 @@ var DedicatedPages = (() => {
         ${isActive ? '<div style="position:absolute;top:8px;left:8px;background:' + t.colors[1] + ';color:#000;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:800">✓ مختار</div>' : ''}
       `;
       card.onclick = () => {
+        // ═══ Custom theme — يفتح color picker ═══
+        if (t.id === 'custom') {
+          if (window.ExtraThemes?.openCustomPicker) {
+            window.ExtraThemes.openCustomPicker();
+            return;
+          }
+        }
+        
         // ═══ CRITICAL: Apply theme multiple ways to ensure it works ═══
         
         // 1. Apply via App.Theme.apply() (preferred)
@@ -278,6 +290,13 @@ var DedicatedPages = (() => {
             window.App.Theme.apply(t.id);
           }
         } catch (e) { console.warn('[Theme] App.Theme.apply failed:', e); }
+        
+        // 1b. Apply via ExtraThemes for new themes
+        try {
+          if (['tropical','sunset','oled','custom'].includes(t.id) && window.ExtraThemes?.apply) {
+            window.ExtraThemes.apply(t.id);
+          }
+        } catch (e) { console.warn('[Theme] ExtraThemes.apply failed:', e); }
         
         // 2. Direct DOM manipulation (fallback - always works)
         try {
@@ -290,7 +309,16 @@ var DedicatedPages = (() => {
           // Update theme-color meta for PWA
           const meta = document.querySelector('meta[name="theme-color"]');
           if (meta) {
-            const colors = { default: '#0a0a0a', light: '#fdf8f3', midnight: '#05070a', rose: '#1a0d14' };
+            const colors = { 
+              default: '#0a0a0a', 
+              light: '#fdf8f3', 
+              midnight: '#05070a', 
+              rose: '#1a0d14',
+              tropical: '#052e2b',
+              sunset: '#1a0f1a',
+              oled: '#000000',
+              custom: '#0a0a0a'
+            };
             meta.setAttribute('content', colors[t.id] || '#05070a');
           }
         } catch (e) { console.warn('[Theme] Direct apply failed:', e); }
